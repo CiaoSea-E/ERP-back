@@ -18,14 +18,16 @@ namespace ERP.DAL
         {
             try
             {
-                ConnectionStringSettings setting = ConfigurationManager.ConnectionStrings["ERP_BanHang"];
-                if (setting != null && !string.IsNullOrEmpty(setting.ConnectionString))
+                ConnectionStringSettings settingConn = ConfigurationManager.ConnectionStrings["ERP_Connection"];
+                if (settingConn != null && !string.IsNullOrEmpty(settingConn.ConnectionString))
                 {
-                    return setting.ConnectionString;
+                    return settingConn.ConnectionString;
                 }
-                if (ConfigurationManager.ConnectionStrings.Count > 0 && ConfigurationManager.ConnectionStrings[0] != null)
+
+                ConnectionStringSettings settingBH = ConfigurationManager.ConnectionStrings["ERP_BanHang"];
+                if (settingBH != null && !string.IsNullOrEmpty(settingBH.ConnectionString))
                 {
-                    return ConfigurationManager.ConnectionStrings[0].ConnectionString;
+                    return settingBH.ConnectionString;
                 }
             }
             catch
