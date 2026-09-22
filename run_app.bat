@@ -2,10 +2,10 @@
 if not defined DOTNET_ROOT if exist "C:\Program Files\dotnet" set "DOTNET_ROOT=C:\Program Files\dotnet"
 echo ================================================================
 echo   DANG KHOI DONG HE THONG ERP TONG THE (.NET FRAMEWORK 4.8)
-echo   Gom: ERP_Khach (Portal), ERP_BanHang, HR_Management (Nhan Su)
+echo   Gom: ERP_Khach (Portal), ERP_BanHang, HR_Management, ERPKho1
 echo ================================================================
 
-powershell -Command "Stop-Process -Name 'ERP_Khach','ERP_BanHang','HR_Management' -Force -ErrorAction SilentlyContinue"
+powershell -Command "Stop-Process -Name 'ERP_Khach','ERP_BanHang','HR_Management','ERPKho1' -Force -ErrorAction SilentlyContinue"
 
 echo [1/3] Kiem tra va khoi phuc thu vien NuGet...
 if exist "%~dp0nuget.exe" (

@@ -6,6 +6,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERP_Khach", "ERP_BanHang\ER
 	ProjectSection(ProjectDependencies) = postProject
 		{3E13F865-681D-47FB-B68F-3141FBF886DC} = {3E13F865-681D-47FB-B68F-3141FBF886DC}
 		{AD783945-54A5-44E4-B58D-A3FC2743CC56} = {AD783945-54A5-44E4-B58D-A3FC2743CC56}
+		{C746CEAC-1BB1-494E-822F-78A31A195F17} = {C746CEAC-1BB1-494E-822F-78A31A195F17}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERP_BanHang", "ERP_BanHang\ERP_BanHang\ERP_BanHang.csproj", "{3E13F865-681D-47FB-B68F-3141FBF886DC}"
@@ -14,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HR_Management", "HR_Managem
 	ProjectSection(ProjectDependencies) = postProject
 		{3E13F865-681D-47FB-B68F-3141FBF886DC} = {3E13F865-681D-47FB-B68F-3141FBF886DC}
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERPKho1", "ERPKho1\ERPKho1.csproj", "{C746CEAC-1BB1-494E-822F-78A31A195F17}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +36,10 @@ Global
 		{AD783945-54A5-44E4-B58D-A3FC2743CC56}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD783945-54A5-44E4-B58D-A3FC2743CC56}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD783945-54A5-44E4-B58D-A3FC2743CC56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C746CEAC-1BB1-494E-822F-78A31A195F17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C746CEAC-1BB1-494E-822F-78A31A195F17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C746CEAC-1BB1-494E-822F-78A31A195F17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C746CEAC-1BB1-494E-822F-78A31A195F17}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -24,8 +24,6 @@ namespace ERP_BanHang
         {
             InitializeComponent();
             KhoiTaoLongPressTimer();
-            DieuHuongBanHang.DangKyForm(this);
-            this.btnDonHang.Click += btnDonHang_Click;
         }
 
         private void KhoiTaoLongPressTimer()
@@ -388,47 +386,55 @@ namespace ERP_BanHang
         }
 
 
-        // ==========================================
-        // KHU VỰC ĐIỀU HƯỚNG SIDEBAR
-        // ==========================================
-
-        private void btnDonHang_Click(object sender, EventArgs e)
-        {
-            DieuHuongBanHang.ChuyenDen<QlyDonHang>(this);
-        }
-
         private void btnSanPham_Click(object sender, EventArgs e)
         {
-            DieuHuongBanHang.ChuyenDen<QlySanPham>(this);
+            this.Hide();
+            QlySanPham qlySanPhamForm = new QlySanPham();
+            qlySanPhamForm.ShowDialog();
+            this.Close();
         }
 
         private void btnNhaPhanPhoi_Click(object sender, EventArgs e)
         {
-            DieuHuongBanHang.ChuyenDen<QlyKhachHang>(this);
+            this.Hide();
+            QlyKhachHang qlyKhachHangForm = new QlyKhachHang();
+            qlyKhachHangForm.ShowDialog();
+            this.Close();
         }
 
         private void btnGiaoHang_Click(object sender, EventArgs e)
         {
-            DieuHuongBanHang.ChuyenDen<QlyGiaoHang>(this);
+            this.Hide();
+            QlyGiaoHang qlyGiaoHangForm = new QlyGiaoHang();
+            qlyGiaoHangForm.ShowDialog();
+            this.Close();
         }
 
         private void btnHangTraLoi_Click(object sender, EventArgs e)
         {
-            DieuHuongBanHang.ChuyenDen<XulyHangLoi>(this);
+            this.Hide();
+            XulyHangLoi xulyHangLoiForm = new XulyHangLoi();
+            xulyHangLoiForm.ShowDialog();
+            this.Close();
         }
 
         private void btnCreateOrder_Click(object sender, EventArgs e)
         {
-            using (TaoDonHang taoDonHang = new TaoDonHang())
+            TaoDonHang taoDonHang = new TaoDonHang();
+            taoDonHang.ShowDialog();
+            if (taoDonHang.ShowDialog() == DialogResult.OK)
             {
-                taoDonHang.ShowDialog();
+                // Tự động tải lại dữ liệu mới nhất từ CSDL Neon vào DataGridView
                 LoadDataDonHang();
             }
         }
 
         private void btnThongKe_Click(object sender, EventArgs e)
         {
-            DieuHuongBanHang.ChuyenDen<BaoCaoThongKe>(this);
+            this.Hide();
+            BaoCaoThongKe baoCaoThongKeForm = new BaoCaoThongKe();
+            baoCaoThongKeForm.ShowDialog();
+            this.Close();
         }
 
         private void btnDangNhap_Click(object sender, EventArgs e)

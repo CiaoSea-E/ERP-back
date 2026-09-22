@@ -1,5 +1,5 @@
 using ERP_BanHang; // Tham chiếu sang Project Bán Hàng
-
+using ERPKho1;   // Tham chiếu sang Project Quản lý Kho
 using Npgsql; // Thư viện PostgreSQL cho Neon Data
 using System;
 using System.Configuration; 
@@ -149,6 +149,33 @@ namespace ERP_Khach
                                                     "Từ chối truy cập", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                                 }
                             }
+                            else if (_targetPhanHe.Equals("Kho", StringComparison.OrdinalIgnoreCase))
+                            {
+                                if (KiemTraQuyenKho(chucVu, vaiTro))
+                                {
+                                    MessageBox.Show($"Đăng nhập thành công!\nMã NV: {idNV}\nHọ tên: {tenNV}\nChức vụ: {chucVu}\nQuyền: Cho phép truy cập Phân hệ Kho.",
+                                                    "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                                    // Thiết lập thông tin phiên đăng nhập cho Phân hệ Kho
+                                    UserSession.MaNguoiDung = idNV;
+                                    UserSession.TenNguoiDung = tenNV;
+                                    UserSession.ChucVu = string.IsNullOrEmpty(chucVu) ? vaiTro : chucVu;
+
+                                    this.Hide();
+
+                                    using (FrMain frmKho = new FrMain())
+                                    {
+                                        frmKho.ShowDialog();
+                                    }
+
+                                    this.Close();
+                                }
+                                else
+                                {
+                                    MessageBox.Show($"Tài khoản của nhân viên [{tenNV}] (Chức vụ: {chucVu}) không có quyền truy cập vào Phân hệ Kho!",
+                                                    "Từ chối truy cập", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                                }
+                            }
                             else
                             {
                                 MessageBox.Show($"Phân hệ {_targetPhanHe} hiện đang trong quá trình phát triển.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -225,6 +252,34 @@ namespace ERP_Khach
 
             return laNhanVienNhanSu;
         }
+
+        private bool KiemTraQuyenKho(string chucVu, string vaiTro)
+        {
+            if (string.IsNullOrEmpty(chucVu)) chucVu = "";
+            if (string.IsNullOrEmpty(vaiTro)) vaiTro = "";
+
+            string cvLower = chucVu.Trim().ToLower();
+            string vtLower = vaiTro.Trim().ToLower();
+
+            bool laAdmin = cvLower.Contains("admin") || vtLower.Contains("quản trị") || vtLower.Contains("admin");
+            if (laAdmin) return true;
+
+            if (cvLower.Contains("sản xuất") ||
+                cvLower.Contains("kế toán") ||
+                cvLower.Contains("nhân sự") ||
+                cvLower.Contains("giao hàng"))
+            {
+                return false;
+            }
+
+            bool laNhanVienKho = cvLower.Equals("nhân viên kho") ||
+                                 cvLower.Equals("quản lý kho") ||
+                                 cvLower.Equals("trưởng phòng kho") ||
+                                 vtLower.Contains("kho");
+
+            return laNhanVienKho;
+        }
+
         private void chkHienThiMatKhau_CheckedChanged(object sender, EventArgs e)
         {
             txtMatKhau.UseSystemPasswordChar = !chkHienThiMatKhau.Checked;

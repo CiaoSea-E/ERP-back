@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Configuration;
 using System.Data;
 using Npgsql; // Đã đổi từ System.Data.SqlClient sang Npgsql
@@ -19,7 +19,6 @@ namespace ERP_BanHang
         public XulyHangLoi()
         {
             InitializeComponent();
-            DieuHuongBanHang.DangKyForm(this);
         }
 
         private void XulyHangLoi_Load(object sender, EventArgs e)
@@ -353,32 +352,115 @@ namespace ERP_BanHang
         // ==========================================
         private void btnSanPham_Click(object sender, EventArgs e)
         {
-            DieuHuongBanHang.ChuyenDen<QlySanPham>(this);
+            this.Hide();
+            QlySanPham qlySanPhamForm = new QlySanPham();
+            qlySanPhamForm.ShowDialog();
+            this.Close();
         }
 
         private void btnDonHang_Click(object sender, EventArgs e)
         {
-            DieuHuongBanHang.ChuyenDen<QlyDonHang>(this);
+            this.Hide();
+            QlyDonHang qlyDonHangForm = new QlyDonHang();
+            qlyDonHangForm.ShowDialog();
+            this.Close();
         }
 
         private void btnNhaPhanPhoi_Click(object sender, EventArgs e)
         {
-            DieuHuongBanHang.ChuyenDen<QlyKhachHang>(this);
+            this.Hide();
+            QlyKhachHang qlyKhachHangForm = new QlyKhachHang();
+            qlyKhachHangForm.ShowDialog();
+            this.Close();
         }
 
         private void btnHangTraLoi_Click(object sender, EventArgs e)
         {
-            DieuHuongBanHang.ChuyenDen<XulyHangLoi>(this);
+            this.Hide();
+            XulyHangLoi xulyHangLoiForm = new XulyHangLoi();
+            xulyHangLoiForm.ShowDialog();
+            this.Close();
         }
 
         private void btnGiaoHang_Click(object sender, EventArgs e)
         {
-            DieuHuongBanHang.ChuyenDen<QlyGiaoHang>(this);
+            this.Hide();
+            QlyGiaoHang qlyGiaoHangForm = new QlyGiaoHang();
+            qlyGiaoHangForm.ShowDialog();
+            this.Close();
         }
 
         private void btnThongKe_Click(object sender, EventArgs e)
         {
-            DieuHuongBanHang.ChuyenDen<BaoCaoThongKe>(this);
+            this.Hide();
+            BaoCaoThongKe baoCaoThongKeForm = new BaoCaoThongKe();
+            baoCaoThongKeForm.ShowDialog();
+            this.Close();
+        }
+
+        private void btnDangNhap_Click(object sender, EventArgs e)
+        {
+            DialogResult confirm = MessageBox.Show(
+                "Bạn có chắc chắn muốn ĐĂNG XUẤT và quay lại màn hình đăng nhập?",
+                "Xác nhận đăng xuất",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (confirm == DialogResult.Yes)
+            {
+                try
+                {
+                    // 1. Xóa file phiên làm việc tạm (nếu có)
+                    string tempPath = System.IO.Path.Combine(Application.StartupPath, "session.txt");
+                    if (System.IO.File.Exists(tempPath))
+                    {
+                        System.IO.File.Delete(tempPath);
+                    }
+
+                    // 2. Thuật toán tìm file ERP_Khach.exe linh hoạt trên mọi máy
+                    string baseDir = Application.StartupPath;
+                    string targetExe = "ERP_Khach.exe";
+                    string pathExeDangNhap = "";
+
+                    // Kiểm tra các vị trí file exe có thể nằm
+                    string[] possiblePaths = new string[]
+                    {
+                // Khi chạy Release / Đóng gói chung thư mục
+                System.IO.Path.Combine(baseDir, targetExe),
+                System.IO.Path.Combine(baseDir, "..", targetExe),
+                System.IO.Path.Combine(baseDir, "..", "ERP_Khach", targetExe),
+                
+                // Khi chạy Debug trong Visual Studio
+                System.IO.Path.GetFullPath(System.IO.Path.Combine(baseDir, @"..\..\..\..\ERP_Khach\bin\Debug\ERP_Khach.exe")),
+                System.IO.Path.GetFullPath(System.IO.Path.Combine(baseDir, @"..\..\..\..\ERP_Khach\bin\Release\ERP_Khach.exe"))
+                    };
+
+                    foreach (string p in possiblePaths)
+                    {
+                        if (System.IO.File.Exists(p))
+                        {
+                            pathExeDangNhap = p;
+                            break;
+                        }
+                    }
+
+                    // 3. Khởi chạy ứng dụng đăng nhập và đóng ứng dụng hiện tại
+                    if (!string.IsNullOrEmpty(pathExeDangNhap))
+                    {
+                        System.Diagnostics.Process.Start(pathExeDangNhap);
+                        Application.Exit(); // Đóng hoàn toàn ERP_BanHang
+                    }
+                    else
+                    {
+                        MessageBox.Show("Không tìm thấy file ứng dụng Đăng nhập (ERP_Khach.exe)!\nVui lòng kiểm tra lại thư mục chứa file.",
+                                        "Lỗi khởi chạy", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi khi đăng xuất: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
     }
 }
