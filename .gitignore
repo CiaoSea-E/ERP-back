@@ -33,5 +33,6 @@ x86/
 **/[Pp]ackages/*
 !**/[Pp]ackages/build/
 
-
-
+## Release packages
+Goi_Cai_Dat_ERP/
+*.zip
