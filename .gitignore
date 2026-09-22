@@ -29,4 +29,9 @@ x86/
 .agents/
 *.log
 
+## NuGet Packages (Restored automatically by Visual Studio via nuget.config)
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+
 
