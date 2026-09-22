@@ -1,3 +1,4 @@
+using ERP;        // Tham chiếu sang Project Logistics (QuanLyNhaCungCap)
 using ERP_BanHang; // Tham chiếu sang Project Bán Hàng
 using ERPKho1;   // Tham chiếu sang Project Quản lý Kho
 using Npgsql; // Thư viện PostgreSQL cho Neon Data
@@ -176,6 +177,28 @@ namespace ERP_Khach
                                                     "Từ chối truy cập", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                                 }
                             }
+                            else if (_targetPhanHe.IndexOf("logistic", StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                if (KiemTraQuyenLogistics(chucVu, vaiTro))
+                                {
+                                    MessageBox.Show($"Đăng nhập thành công!\nMã NV: {idNV}\nHọ tên: {tenNV}\nChức vụ: {chucVu}\nQuyền: Cho phép truy cập Phân hệ Logistics.",
+                                                    "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                                    this.Hide();
+
+                                    using (QuanLyNhaCungCap frmLogistics = new QuanLyNhaCungCap())
+                                    {
+                                        frmLogistics.ShowDialog();
+                                    }
+
+                                    this.Close();
+                                }
+                                else
+                                {
+                                    MessageBox.Show($"Tài khoản của nhân viên [{tenNV}] (Chức vụ: {chucVu}) không có quyền truy cập vào Phân hệ Logistics!",
+                                                    "Từ chối truy cập", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                                }
+                            }
                             else
                             {
                                 MessageBox.Show($"Phân hệ {_targetPhanHe} hiện đang trong quá trình phát triển.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -278,6 +301,37 @@ namespace ERP_Khach
                                  vtLower.Contains("kho");
 
             return laNhanVienKho;
+        }
+
+        private bool KiemTraQuyenLogistics(string chucVu, string vaiTro)
+        {
+            if (string.IsNullOrEmpty(chucVu)) chucVu = "";
+            if (string.IsNullOrEmpty(vaiTro)) vaiTro = "";
+
+            string cvLower = chucVu.Trim().ToLower();
+            string vtLower = vaiTro.Trim().ToLower();
+
+            bool laAdmin = cvLower.Contains("admin") || vtLower.Contains("quản trị") || vtLower.Contains("admin");
+            if (laAdmin) return true;
+
+            if (cvLower.Contains("kho") ||
+                cvLower.Contains("kế toán") ||
+                cvLower.Contains("nhân sự") ||
+                cvLower.Contains("bán hàng"))
+            {
+                return false;
+            }
+
+            bool laNhanVienLogistics = cvLower.Equals("nhân viên logistics") ||
+                                      cvLower.Equals("quản lý logistics") ||
+                                      cvLower.Equals("trưởng phòng logistics") ||
+                                      cvLower.Contains("vận chuyển") ||
+                                      cvLower.Contains("giao hàng") ||
+                                      cvLower.Contains("logistic") ||
+                                      vtLower.Contains("logistic") ||
+                                      vtLower.Contains("vận chuyển");
+
+            return laNhanVienLogistics;
         }
 
         private void chkHienThiMatKhau_CheckedChanged(object sender, EventArgs e)
