@@ -29,7 +29,4 @@ x86/
 .agents/
 *.log
 
-## NuGet Packages
-**/[Pp]ackages/*
-!**/[Pp]ackages/build/
 
