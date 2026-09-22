@@ -11,6 +11,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERP_BanHang", "ERP_BanHang\ERP_BanHang\ERP_BanHang.csproj", "{3E13F865-681D-47FB-B68F-3141FBF886DC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HR_Management", "HR_Management\HR_Management.csproj", "{AD783945-54A5-44E4-B58D-A3FC2743CC56}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3E13F865-681D-47FB-B68F-3141FBF886DC} = {3E13F865-681D-47FB-B68F-3141FBF886DC}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

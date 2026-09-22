@@ -8,7 +8,6 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>ERP_Khach</RootNamespace>
     <AssemblyName>ERP_Khach</AssemblyName>
-    <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
