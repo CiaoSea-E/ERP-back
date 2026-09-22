@@ -8,6 +8,7 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>HR_Management</RootNamespace>
     <AssemblyName>HR_Management</AssemblyName>
+    <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
