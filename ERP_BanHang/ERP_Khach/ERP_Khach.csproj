@@ -155,9 +155,9 @@
       <Project>{c746ceac-1bb1-494e-822f-78a31a195f17}</Project>
       <Name>ERPKho1</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\HR_Management\HR_Management.csproj">
+    <ProjectReference Include="..\..\ERP_NhanSu\ERP_NhanSu.csproj">
       <Project>{AD783945-54A5-44E4-B58D-A3FC2743CC56}</Project>
-      <Name>HR_Management</Name>
+      <Name>ERP_NhanSu</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ERP_Logistics\ERP_Logistics.csproj">
       <Project>{D2182BA6-853A-40EF-9E62-779D45DE8074}</Project>

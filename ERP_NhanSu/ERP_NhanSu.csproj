@@ -7,7 +7,7 @@
     <ProjectGuid>{AD783945-54A5-44E4-B58D-A3FC2743CC56}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>HR_Management</RootNamespace>
-    <AssemblyName>HR_Management</AssemblyName>
+    <AssemblyName>ERP_NhanSu</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
