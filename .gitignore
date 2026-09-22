@@ -28,3 +28,8 @@ x86/
 ## Antigravity / Agent Workspace Folders
 .agents/
 *.log
+
+## NuGet Packages
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
