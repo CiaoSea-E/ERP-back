@@ -1,5 +1,5 @@
 @echo off
-set "DOTNET_ROOT=C:\Program Files\dotnet"
+if not defined DOTNET_ROOT if exist "C:\Program Files\dotnet" set "DOTNET_ROOT=C:\Program Files\dotnet"
 echo ================================================================
 echo   DANG KHOI DONG HE THONG ERP TONG THE (.NET FRAMEWORK 4.8)
 echo   Gom: ERP_Khach (Portal), ERP_BanHang, HR_Management (Nhan Su)
