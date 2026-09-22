@@ -2,11 +2,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HR_Management", "HR_Management\HR_Management.csproj", "{AD783945-54A5-44E4-B58D-A3FC2743CC56}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERP_Khach", "ERP_BanHang\ERP_Khach\ERP_Khach.csproj", "{66BA7A4D-58B3-40FE-983F-6949FFD36F52}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3E13F865-681D-47FB-B68F-3141FBF886DC} = {3E13F865-681D-47FB-B68F-3141FBF886DC}
+		{AD783945-54A5-44E4-B58D-A3FC2743CC56} = {AD783945-54A5-44E4-B58D-A3FC2743CC56}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERP_BanHang", "ERP_BanHang\ERP_BanHang\ERP_BanHang.csproj", "{3E13F865-681D-47FB-B68F-3141FBF886DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERP_Khach", "ERP_BanHang\ERP_Khach\ERP_Khach.csproj", "{66BA7A4D-58B3-40FE-983F-6949FFD36F52}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HR_Management", "HR_Management\HR_Management.csproj", "{AD783945-54A5-44E4-B58D-A3FC2743CC56}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,18 +18,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AD783945-54A5-44E4-B58D-A3FC2743CC56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AD783945-54A5-44E4-B58D-A3FC2743CC56}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AD783945-54A5-44E4-B58D-A3FC2743CC56}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AD783945-54A5-44E4-B58D-A3FC2743CC56}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3E13F865-681D-47FB-B68F-3141FBF886DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3E13F865-681D-47FB-B68F-3141FBF886DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3E13F865-681D-47FB-B68F-3141FBF886DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3E13F865-681D-47FB-B68F-3141FBF886DC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{66BA7A4D-58B3-40FE-983F-6949FFD36F52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{66BA7A4D-58B3-40FE-983F-6949FFD36F52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{66BA7A4D-58B3-40FE-983F-6949FFD36F52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{66BA7A4D-58B3-40FE-983F-6949FFD36F52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E13F865-681D-47FB-B68F-3141FBF886DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E13F865-681D-47FB-B68F-3141FBF886DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E13F865-681D-47FB-B68F-3141FBF886DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E13F865-681D-47FB-B68F-3141FBF886DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD783945-54A5-44E4-B58D-A3FC2743CC56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD783945-54A5-44E4-B58D-A3FC2743CC56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD783945-54A5-44E4-B58D-A3FC2743CC56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD783945-54A5-44E4-B58D-A3FC2743CC56}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
