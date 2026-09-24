@@ -158,9 +158,9 @@
       <Project>{3e13f865-681d-47fb-b68f-3141fbf886dc}</Project>
       <Name>ERP_BanHang</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\ERPKho1\ERPKho1.csproj">
-      <Project>{c746ceac-1bb1-494e-822f-78a31a195f17}</Project>
-      <Name>ERPKho1</Name>
+    <ProjectReference Include="..\..\ERPKho\ERPKho.csproj">
+      <Project>{7daf55d8-4518-40b9-9311-e7490627a59b}</Project>
+      <Name>ERPKho</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ERP_NhanSu\ERP_NhanSu.csproj">
       <Project>{AD783945-54A5-44E4-B58D-A3FC2743CC56}</Project>

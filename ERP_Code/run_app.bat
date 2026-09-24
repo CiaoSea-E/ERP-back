@@ -18,7 +18,7 @@ if exist "%ROOT_DIR%ERP_Code\ERP.sln" (
 set "EXE_PATH=%CODE_DIR%ERP_BanHang\ERP_Khach\bin\Debug\ERP_Khach.exe"
 
 :: Dong cac tien trinh ERP cu dang chay ngam neu co
-powershell -Command "Stop-Process -Name 'ERP_Khach','ERP_BanHang','ERP_NhanSu','ERPKho1','ERP_Logistics','KE_TOAN_TAI_CHINH' -Force -ErrorAction SilentlyContinue"
+powershell -Command "Stop-Process -Name 'ERP_Khach','ERP_BanHang','ERP_NhanSu','ERPKho','ERPKho1','ERP_Logistics','KE_TOAN_TAI_CHINH' -Force -ErrorAction SilentlyContinue"
 
 :: Neu chua co file .exe thi tien hanh bien dich
 if not exist "%EXE_PATH%" (

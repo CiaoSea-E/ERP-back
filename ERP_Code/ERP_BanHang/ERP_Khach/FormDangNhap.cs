@@ -1,6 +1,6 @@
 using ERP;        // Tham chiếu sang Project Logistics (QuanLyNhaCungCap)
 using ERP_BanHang; // Tham chiếu sang Project Bán Hàng
-using ERPKho1;   // Tham chiếu sang Project Quản lý Kho
+using ERPKho;   // Tham chiếu sang Project Quản lý Kho
 using Npgsql; // Thư viện PostgreSQL cho Neon Data
 using System;
 using System.Configuration; 

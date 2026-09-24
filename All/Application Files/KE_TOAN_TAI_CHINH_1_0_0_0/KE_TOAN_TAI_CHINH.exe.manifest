@@ -30,14 +30,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="KE_TOAN_TAI_CHINH.exe" size="123904">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="KE_TOAN_TAI_CHINH.exe" size="126976">
       <assemblyIdentity name="KE_TOAN_TAI_CHINH" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>fyalWO7wWM62KMdqVkboyz4XKBPhb8J0hBJZez9emqE=</dsig:DigestValue>
+        <dsig:DigestValue>GlKTW3dc77s1ji8AYyo8Esoh7k06LEm441fgeOnrh5g=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
