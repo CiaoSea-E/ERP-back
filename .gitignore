@@ -1,10 +1,18 @@
 ## Visual Studio Build Results
-[Bb]in/
 [Oo]bj/
-[Dd]ebug/
-[Rr]elease/
 x64/
 x86/
+[Bb]ld/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+
+## Allow pre-built Debug binaries for ERP_Khach so Visual Studio can run immediately
+**/bin/*
+!**/ERP_Khach/bin/
+**/ERP_Khach/bin/*
+!**/ERP_Khach/bin/Debug/
+!**/ERP_Khach/bin/Debug/**
 [Bb]ld/
 [Oo]ut/
 [Ll]og/

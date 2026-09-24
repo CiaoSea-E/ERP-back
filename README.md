@@ -181,18 +181,25 @@ ERP/
 
 ## 🚀 HƯỚNG DẪN CÀI ĐẶT & SỬ DỤNG
 
-### Cách 1: Cài đặt nhanh qua ClickOnce (Khuyên dùng cho người dùng cuối)
+### Cách 1: Chạy nhanh 1-Click bằng file `run_app.bat` (Khuyên dùng khi clone mã nguồn)
+1. Chỉ cần nhấp đúp vào file **`run_app.bat`** ở thư mục gốc (hoặc trong `ERP_Code/run_app.bat`).
+2. Script sẽ tự động:
+   - Kiểm tra và khôi phục toàn bộ thư viện NuGet (`Npgsql`, `EPPlus`, `iText`...).
+   - Biên dịch tự động hệ thống.
+   - Khởi chạy trực tiếp Cổng Master Portal **`ERP_Khach`** ngay tức thì.
+
+### Cách 2: Cài đặt tự động qua ClickOnce (Khuyên dùng cho người dùng cuối / máy không cài Visual Studio)
 1. Tải về thư mục **`All/`** hoặc giải nén file **`All/All.zip`** (hoặc `All.rar`).
 2. Nhấp đúp vào file **`setup.exe`** (hoặc chạy trực tiếp file `.application` của phân hệ muốn mở, ví dụ `ERP_Khach.application`).
 3. Trình cài đặt ClickOnce sẽ tự động kiểm tra môi trường, tải các file phụ thuộc và tạo Shortcut khởi động trên Desktop / Start Menu.
 
-### Cách 2: Mở mã nguồn và biên dịch bằng Visual Studio
+### Cách 3: Mở mã nguồn và biên dịch bằng Visual Studio
 1. Yêu cầu môi trường:
-   - **Visual Studio 2019 / 2022** (cài đặt workload *.NET desktop development*).
+   - **Visual Studio 2019 / 2022** (workload *.NET desktop development*).
    - **.NET Framework 4.8 Developer Pack**.
 2. Mở file **`ERP_Code/ERP.sln`**.
-3. Chọn cấu hình **`Release`** | **`Any CPU`** và nhấn **`Build Solution`** (hoặc phím tắt `Ctrl + Shift + B`).
-4. Nhấn **`F5`** để khởi chạy chế độ Debug/Run.
+3. Hệ thống đã tích hợp sẵn cơ chế **Auto-Restore NuGet** (`Directory.Build.targets`) và kèm sẵn bộ binary Debug chạy ngay.
+4. Bạn có thể nhấn trực tiếp phím **`F5`** (hoặc nút **Start**) để chạy, hoặc nhấn **`Ctrl + Shift + B`** để biên dịch lại toàn bộ.
 
 ---
 
