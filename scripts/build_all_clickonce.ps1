@@ -214,8 +214,8 @@ Package-ClickOnceApp -appName "ERP_Khach" -folderName "ERP_Khach_1_0_0_4" -appVe
 # 2. ERP_BanHang
 Package-ClickOnceApp -appName "ERP_BanHang" -folderName "ERP_BanHang_1_0_0_9" -appVersion "1.0.0.9" -srcDir (Join-Path $ERP_REPO "ERP_Code\ERP_BanHang\ERP_BanHang\bin\Release") -mainExe "ERP_BanHang.exe"
 
-# 3. ERPKho1
-Package-ClickOnceApp -appName "ERPKho1" -folderName "ERPKho1_1_0_0_1" -appVersion "1.0.0.1" -srcDir (Join-Path $ERP_REPO "ERP_Code\ERPKho1\bin\Release") -mainExe "ERPKho1.exe"
+# 3. ERPKho
+Package-ClickOnceApp -appName "ERPKho" -folderName "ERPKho_1_0_0_1" -appVersion "1.0.0.1" -srcDir (Join-Path $ERP_REPO "ERP_Code\ERPKho\bin\Release") -mainExe "ERPKho.exe"
 
 # 4. ERP_Logistics
 Package-ClickOnceApp -appName "ERP_Logistics" -folderName "ERP_Logistics_1_0_0_0" -appVersion "1.0.0.0" -srcDir (Join-Path $ERP_REPO "ERP_Code\ERP_Logistics\bin\Release") -mainExe "ERP_Logistics.exe"

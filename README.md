@@ -53,7 +53,7 @@ Hệ thống kết nối tập trung 5 phân hệ nghiệp vụ vào một cơ s
 - **Chăm sóc sau bán hàng:** Tiếp nhận và xử lý yêu cầu đổi trả, khiếu nại sản phẩm lỗi (`XulyHangLoi`).
 - **Auto-Reload thông minh (10s):** Tự động tải lại dữ liệu ngầm kèm nút làm mới thủ công, tùy chọn bật/tắt, nhãn thời gian cập nhật, giữ nguyên dòng đang chọn và vị trí cuộn chuột, bảo vệ thao tác người dùng.
 
-### 2. 📦 Phân Hệ Quản Lý Kho Hàng (`ERPKho1`)
+### 2. 📦 Phân Hệ Quản Lý Kho Hàng (`ERPKho`)
 - **Tra cứu tồn kho thời gian thực:** Tìm kiếm thông minh theo mã vật tư, tên vật tư, tên kho bằng cú pháp chuẩn PostgreSQL (`COALESCE`, `ILIKE`).
 - **Xuất nhập kho theo nguyên tắc FEFO (First-Expired, First-Out):** Ưu tiên xuất các lô hàng có hạn sử dụng gần nhất.
 - **Tự động hóa vị trí kệ kho:** Tự động trừ tồn kho theo lô/vị trí và giải phóng trạng thái kệ lưu trữ thành `"Trống"` khi hàng hóa xuất hết.
@@ -89,7 +89,7 @@ flowchart TD
 
     subgraph Modules["5 Phân Hệ Nghiệp Vụ"]
         BanHang["🛒 Phân Hệ Bán Hàng (ERP_BanHang)"]
-        Kho["📦 Phân Hệ Quản Lý Kho (ERPKho1)"]
+        Kho["📦 Phân Hệ Quản Lý Kho (ERPKho)"]
         NhanSu["👥 Phân Hệ Nhân Sự (ERP_NhanSu)"]
         Logistics["🚚 Phân Hệ Logistics (ERP_Logistics)"]
         KeToan["💰 Phân Hệ Kế Toán (KE_TOAN_TAI_CHINH)"]
@@ -129,7 +129,7 @@ ERP/
 │   ├── setup.exe                         # Trình cài đặt tự động ClickOnce 1-Click
 │   ├── ERP_Khach.application             # Manifest khởi chạy Master Portal
 │   ├── ERP_BanHang.application           # Manifest khởi chạy Bán hàng
-│   ├── ERPKho1.application               # Manifest khởi chạy Quản lý kho
+│   ├── ERPKho.application                # Manifest khởi chạy Quản lý kho
 │   ├── ERP_NhanSu.application            # Manifest khởi chạy Nhân sự
 │   ├── ERP_Logistics.application         # Manifest khởi chạy Logistics
 │   ├── KE_TOAN_TAI_CHINH.application     # Manifest khởi chạy Kế toán
@@ -154,7 +154,7 @@ ERP/
 │   │       ├── FormDangNhap.cs           # Form xác thực tài khoản & phân quyền
 │   │       └── LogInPhanHe.cs            # Menu lựa chọn phân hệ điều hướng
 │   │
-│   ├── ERPKho1/                          # Mã nguồn phân hệ Quản lý Kho
+│   ├── ERPKho/                           # Mã nguồn phân hệ Quản lý Kho
 │   │   ├── FrTraCuuTonKho.cs             # Tra cứu tồn kho (PostgreSQL chuẩn hóa)
 │   │   ├── FrXacNhanXuatKho.cs           # Xác nhận xuất kho trừ tồn kho FEFO
 │   │   ├── FrDangNhap.cs                 # Đăng nhập độc lập phân hệ kho

@@ -40,7 +40,7 @@ echo ================================================================
 echo 1. Nhap dup chuot vao file: ERP_Khach.exe de khoi dong he thong.
 echo 2. Dang nhap va chon phan he lam viec:
 echo    - Ban hang ^(ERP_BanHang^)
-echo    - Quan ly Kho ^(ERPKho1^)
+echo    - Quan ly Kho ^(ERPKho^)
 echo    - Nhan su ^(ERP_NhanSu^)
 echo    - Logistics / Nha cung cap ^(ERP_Logistics^)
 echo    - Ke toan tai chinh ^(KE_TOAN_TAI_CHINH^)
