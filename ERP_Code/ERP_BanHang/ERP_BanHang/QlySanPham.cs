@@ -56,9 +56,9 @@ namespace ERP_BanHang
 
             KhoiTaoCotBang();
             LoadDanhMucIntoComboBox(); // Load danh mục LoaiSP từ CSDL PostgreSQL
-            LoadDataSanPham();          // Load danh sách sản phẩm kết hợp HangHoa
 
             isInitializing = false;
+            LoadDataSanPham();          // Load danh sách sản phẩm kết hợp HangHoa ngay lập tức khi mở form
         }
 
         private void KhoiTaoCotBang()
@@ -276,7 +276,7 @@ namespace ERP_BanHang
 
         private void LocDuLieu()
         {
-            if (isInitializing || dtSanPham == null) return;
+            if (dtSanPham == null) return;
 
             string keyword = txtSearch.Text.Trim().Replace("'", "''");
             if (keyword == "Tìm mã SP, tên sản phẩm...") keyword = "";
