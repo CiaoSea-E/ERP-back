@@ -119,48 +119,12 @@ flowchart TD
 
 ---
 
-## 📂 CẤU TRÚC THƯ MỤC REPOSITORY
+### 📂 CẤU TRÚC THƯ MỤC REPOSITORY
+
+Repository được tổ chức tinh gọn gồm 2 thư mục chính:
 
 ```text
 ERP/
-├── ERP.sln                               # Solution Visual Studio tổng hợp cả 6 dự án
-├── nuget.config                          # Cấu hình nguồn khôi phục gói NuGet
-├── Directory.Build.targets               # Target MSBuild tự động hóa biên dịch
-│
-├── ERP_BanHang/
-│   ├── ERP_BanHang/                      # Mã nguồn phân hệ Quản lý Bán hàng
-│   │   ├── BaoCaoThongKe.cs              # Báo cáo doanh thu, KPI lọc theo ngày
-│   │   ├── ChiTietHoaDon.cs              # Chi tiết hóa đơn, bảo vệ xuất PDF
-│   │   ├── QlyDonHang.cs                 # Quản lý đơn hàng, xem hóa đơn
-│   │   ├── QlyGiaoHang.cs                # Quản lý giao nhận, đồng bộ vận chuyển
-│   │   ├── QlyKhachHang.cs               # Quản lý khách hàng (Auto Reload)
-│   │   ├── QlySanPham.cs                 # Quản lý sản phẩm (Auto Reload)
-│   │   └── XulyHangLoi.cs                # Xử lý hàng lỗi, khiếu nại (Auto Reload)
-│   │
-│   └── ERP_Khach/                        # Master Portal đăng nhập tổng thể
-│       ├── FormDangNhap.cs               # Form xác thực tài khoản & phân quyền
-│       └── LogInPhanHe.cs                # Menu lựa chọn phân hệ điều hướng
-│
-├── ERPKho1/                              # Mã nguồn phân hệ Quản lý Kho
-│   ├── FrTraCuuTonKho.cs                 # Tra cứu tồn kho (PostgreSQL chuẩn hóa)
-│   ├── FrXacNhanXuatKho.cs               # Xác nhận xuất kho trừ tồn kho FEFO
-│   ├── FrDangNhap.cs                     # Đăng nhập độc lập phân hệ kho
-│   └── FrMain.cs                         # Giao diện chính phân hệ kho
-│
-├── ERP_NhanSu/                           # Mã nguồn phân hệ Quản lý Nhân sự
-│   ├── GUI/FormMain.cs                   # Giao diện chính nhân sự (SwitchView)
-│   ├── GUI/UserControls/ucDashboard.cs   # Thẻ KPI tổng quan (Auto-Load)
-│   ├── GUI/UserControls/ucBaoCao.cs      # Lập & xuất báo cáo PDF (iText)
-│   └── DAL/DatabaseHelper.cs             # Kết nối Neon Cloud có retry an toàn
-│
-├── ERP_Logistics/                        # Mã nguồn phân hệ Logistics & Cung ứng
-│   ├── frmQuanLyNhaCungCap.cs            # Quản lý danh mục nhà cung cấp
-│   └── frmQuanLyVanChuyen.cs             # Quản lý đơn vị và lộ trình giao vận
-│
-├── KE_TOAN_TAI_CHINH/                    # Mã nguồn phân hệ Kế toán - Tài chính
-│   ├── Forms/MainForm.cs                 # Bảng điều khiển tài chính
-│   └── Services/                         # Thu, Chi, Công nợ, Đối chiếu
-│
 ├── All/                                  # BỘ CÀI ĐẶT CLICKONCE PHÂN PHỐI HOÀN CHỈNH
 │   ├── setup.exe                         # Trình cài đặt tự động ClickOnce 1-Click
 │   ├── ERP_Khach.application             # Manifest khởi chạy Master Portal
@@ -173,10 +137,44 @@ ERP/
 │   ├── All.zip                           # File nén bộ cài ClickOnce (~23 MB)
 │   └── All.rar                           # File nén WinRAR bộ cài ClickOnce (~20 MB)
 │
-└── scripts/                              # Kịch bản tự động hóa đóng gói ClickOnce
-    ├── build_all_clickonce.ps1           # Script tạo Manifest và tính Digest SHA-256
-    ├── compress_all.ps1                  # Script nén All.zip và All.rar
-    └── compress_release.ps1              # Script nén HeThong_ERP_Release.zip
+├── ERP_Code/                             # TOÀN BỘ MÃ NGUỒN CÁC PHÂN HỆ HỆ THỐNG ERP
+│   ├── ERP.sln                           # Solution Visual Studio tổng hợp cả 6 dự án
+│   │
+│   ├── ERP_BanHang/
+│   │   ├── ERP_BanHang/                  # Mã nguồn phân hệ Quản lý Bán hàng
+│   │   │   ├── BaoCaoThongKe.cs          # Báo cáo doanh thu, KPI lọc theo ngày
+│   │   │   ├── ChiTietHoaDon.cs          # Chi tiết hóa đơn, bảo vệ xuất PDF
+│   │   │   ├── QlyDonHang.cs             # Quản lý đơn hàng, xem hóa đơn
+│   │   │   ├── QlyGiaoHang.cs            # Quản lý giao nhận, đồng bộ vận chuyển
+│   │   │   ├── QlyKhachHang.cs           # Quản lý khách hàng (Auto Reload)
+│   │   │   ├── QlySanPham.cs             # Quản lý sản phẩm (Auto Reload)
+│   │   │   └── XulyHangLoi.cs            # Xử lý hàng lỗi, khiếu nại (Auto Reload)
+│   │   │
+│   │   └── ERP_Khach/                    # Master Portal đăng nhập tổng thể
+│   │       ├── FormDangNhap.cs           # Form xác thực tài khoản & phân quyền
+│   │       └── LogInPhanHe.cs            # Menu lựa chọn phân hệ điều hướng
+│   │
+│   ├── ERPKho1/                          # Mã nguồn phân hệ Quản lý Kho
+│   │   ├── FrTraCuuTonKho.cs             # Tra cứu tồn kho (PostgreSQL chuẩn hóa)
+│   │   ├── FrXacNhanXuatKho.cs           # Xác nhận xuất kho trừ tồn kho FEFO
+│   │   ├── FrDangNhap.cs                 # Đăng nhập độc lập phân hệ kho
+│   │   └── FrMain.cs                     # Giao diện chính phân hệ kho
+│   │
+│   ├── ERP_NhanSu/                       # Mã nguồn phân hệ Quản lý Nhân sự
+│   │   ├── GUI/FormMain.cs               # Giao diện chính nhân sự (SwitchView)
+│   │   ├── GUI/UserControls/ucDashboard.cs # Thẻ KPI tổng quan (Auto-Load)
+│   │   ├── GUI/UserControls/ucBaoCao.cs  # Lập & xuất báo cáo PDF (iText)
+│   │   └── DAL/DatabaseHelper.cs         # Kết nối Neon Cloud có retry an toàn
+│   │
+│   ├── ERP_Logistics/                    # Mã nguồn phân hệ Logistics & Cung ứng
+│   │   ├── frmQuanLyNhaCungCap.cs        # Quản lý danh mục nhà cung cấp
+│   │   └── frmQuanLyVanChuyen.cs         # Quản lý đơn vị và lộ trình giao vận
+│   │
+│   └── KE_TOAN_TAI_CHINH/                # Mã nguồn phân hệ Kế toán - Tài chính
+│       ├── Forms/MainForm.cs             # Bảng điều khiển tài chính
+│       └── Services/                     # Thu, Chi, Công nợ, Đối chiếu
+│
+└── README.md                             # Tài liệu kỹ thuật & Hướng dẫn sử dụng
 ```
 
 ---
@@ -188,18 +186,13 @@ ERP/
 2. Nhấp đúp vào file **`setup.exe`** (hoặc chạy trực tiếp file `.application` của phân hệ muốn mở, ví dụ `ERP_Khach.application`).
 3. Trình cài đặt ClickOnce sẽ tự động kiểm tra môi trường, tải các file phụ thuộc và tạo Shortcut khởi động trên Desktop / Start Menu.
 
-### Cách 2: Chạy trực tiếp bản Portable (Không cần cài đặt)
-1. Mở thư mục `Goi_Cai_Dat_ERP/` hoặc giải nén `HeThong_ERP_Release.zip`.
-2. Khởi chạy file **`ERP_Khach.exe`** để vào Master Portal, hoặc chạy trực tiếp file `.exe` của phân hệ cần dùng (`ERP_BanHang.exe`, `ERPKho1.exe`, `ERP_NhanSu.exe`, `ERP_Logistics.exe`, `KE_TOAN_TAI_CHINH.exe`).
-
-### Cách 3: Mở mã nguồn và biên dịch bằng Visual Studio
+### Cách 2: Mở mã nguồn và biên dịch bằng Visual Studio
 1. Yêu cầu môi trường:
    - **Visual Studio 2019 / 2022** (cài đặt workload *.NET desktop development*).
    - **.NET Framework 4.8 Developer Pack**.
-2. Mở file **`ERP.sln`**.
-3. Visual Studio sẽ tự động khôi phục (restore) toàn bộ gói thư viện NuGet thông qua `nuget.config`.
-4. Chọn cấu hình **`Release`** | **`Any CPU`** và nhấn **`Build Solution`** (hoặc phím tắt `Ctrl + Shift + B`).
-5. Nhấn **`F5`** để khởi chạy chế độ Debug/Run.
+2. Mở file **`ERP_Code/ERP.sln`**.
+3. Chọn cấu hình **`Release`** | **`Any CPU`** và nhấn **`Build Solution`** (hoặc phím tắt `Ctrl + Shift + B`).
+4. Nhấn **`F5`** để khởi chạy chế độ Debug/Run.
 
 ---
 
@@ -232,15 +225,6 @@ Hệ thống sử dụng cơ sở dữ liệu **PostgreSQL** lưu trữ trên n�
 | **Đồng bộ Giao vận Transaction** | `CapNhatTrangThaiGiaoCSDL` sử dụng `NpgsqlTransaction` cập nhật đồng thời bảng `Giaohang` và cập nhật hóa đơn sang `Đã thanh toán` khi giao hàng thành công. | Đảm bảo tính toàn vẹn dữ liệu (ACID) giữa Bán hàng, Giao nhận và Kế toán. |
 | **Quản lý Kho FEFO & Giải phóng kệ** | Tự động trừ tồn kho theo thứ tự hết hạn trước xuất trước (FEFO) và tự động cập nhật trạng thái vị trí kệ sang `Trống` khi số lượng về 0. | Tối ưu hóa không gian lưu trữ kho và giảm thiểu thất thoát do nguyên vật liệu quá hạn. |
 | **ClickOnce Chữ Ký SHA-256** | Tất cả file manifest (`.manifest`, `.application`) được tính toán mã băm SHA-256 chuẩn hóa UTF-8 No BOM, loại trừ Win32 Manifest xung đột. | Vượt qua 100% các bài kiểm tra bảo mật của Windows và `InPlaceHostingManager`. |
-
----
-
-## 📦 ĐÓNG GÓI & TỰ ĐỘNG HÓA
-
-Trong thư mục `scripts/` cung cấp sẵn các script PowerShell phục vụ tự động hóa chu trình CI/CD:
-- **`build_all_clickonce.ps1`**: Quét toàn bộ binary đã build, tự động tạo manifest cho cả 6 phân hệ, tính toán kích thước, chữ ký SHA-256 và sinh file `.application`.
-- **`compress_all.ps1`**: Đóng gói thư mục cài đặt thành `All.zip` và `All.rar` tối ưu dung lượng.
-- **`compress_release.ps1`**: Đóng gói bản Portable thành `HeThong_ERP_Release.zip`.
 
 ---
 
