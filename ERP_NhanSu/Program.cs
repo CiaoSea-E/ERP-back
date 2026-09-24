@@ -22,27 +22,20 @@ namespace HR_Management
                 };
 
                 // Nếu được gọi với tham số --direct (ví dụ từ ERP_BanHang / ERP_Khach sau khi đăng nhập thành công)
-                if (args != null && args.Length > 1 && args[0] == "--direct" && !string.IsNullOrWhiteSpace(args[1]))
+                if (args != null && args.Length > 0 && args[0] == "--direct")
                 {
-                    try
+                    if (args.Length > 1 && !string.IsNullOrWhiteSpace(args[1]))
                     {
                         var bll = new BLL.HeThongBLL();
                         bll.SetCurrentUserByUsername(args[1]);
                     }
-                    catch { }
+                    Application.Run(new FormMain());
                 }
-                else if (BLL.HeThongBLL.CurrentUser == null)
+                else
                 {
-                    try
-                    {
-                        var bll = new BLL.HeThongBLL();
-                        bll.SetCurrentUserByUsername("admin");
-                    }
-                    catch { }
+                    // Khởi động bình thường qua màn hình Chọn Phân Hệ
+                    Application.Run(new LogInPhanHe());
                 }
-
-                // Khởi động trực tiếp vào Phân hệ Nhân Sự (FormMain)
-                Application.Run(new FormMain());
             }
             catch (Exception ex)
             {

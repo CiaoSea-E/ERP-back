@@ -20,6 +20,7 @@ namespace HR_Management.GUI.UserControls
         public ucDashboard()
         {
             InitializeComponent();
+            LoadData();
         }
 
         private void InitializeComponent()

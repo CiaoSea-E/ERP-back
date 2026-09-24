@@ -158,7 +158,7 @@ namespace ERP_BanHang
             DataGridViewButtonColumn colXuatHD = new DataGridViewButtonColumn();
             colXuatHD.Name = "colXuatHoaDon";
             colXuatHD.HeaderText = "THAO TÁC";
-            colXuatHD.Text = "Xuất hóa đơn";
+            colXuatHD.Text = "Xem hóa đơn";
             colXuatHD.UseColumnTextForButtonValue = true;
             colXuatHD.FlatStyle = FlatStyle.Flat;
             colXuatHD.FillWeight = 11;
@@ -476,25 +476,19 @@ namespace ERP_BanHang
             }
         }
 
+        // Mở trực tiếp Form ChiTietHoaDon
         private void BangDonHang_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0 && BangDonHang.Columns[e.ColumnIndex].Name == "colXuatHoaDon")
             {
                 string maDonHang = BangDonHang.Rows[e.RowIndex].Cells["colMaDonHang"].Value?.ToString();
-                string trangThaiTT = BangDonHang.Rows[e.RowIndex].Cells["colTrangThaiThanhToan"].Value?.ToString();
 
-                if (trangThaiTT != "Đã thanh toán")
+                if (!string.IsNullOrEmpty(maDonHang))
                 {
-                    MessageBox.Show($"Đơn hàng [{maDonHang}] chưa hoàn tất thanh toán (Trạng thái: {trangThaiTT})!\nKhông thể xuất hóa đơn cho đơn hàng này.",
-                                    "Cảnh báo",
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Warning);
-                    return;
+                    ChiTietHoaDon chiTietHoaDonForm = new ChiTietHoaDon(maDonHang);
+                    chiTietHoaDonForm.ShowDialog();
+                    LoadDataDonHang(isSilent: true);
                 }
-
-                ChiTietHoaDon chiTietHoaDonForm = new ChiTietHoaDon(maDonHang);
-                chiTietHoaDonForm.ShowDialog();
-                LoadDataDonHang(isSilent: true);
             }
         }
 

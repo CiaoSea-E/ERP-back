@@ -131,9 +131,9 @@ namespace ERP_BanHang
                     COALESCE(GH.DiaChiGiaoHang, KH.DiaChi) AS DiaChiGiaoHang,
                     COALESCE(GH.SDTNguoiNhan, KH.SDT) AS SDTNguoiNhan,
                     COALESCE(GH.TrangThaiGiaoHang, N'Chưa giao') AS TrangThaiGiaoHang
-                FROM GiaoHang GH
-                INNER JOIN DonHang DH ON GH.ID_DH = DH.ID_DH
+                FROM DonHang DH
                 INNER JOIN KhachHang KH ON DH.ID_KH = KH.ID_KH
+                LEFT JOIN GiaoHang GH ON DH.ID_DH = GH.ID_DH
                 ORDER BY DH.NgayTao DESC";
 
             try
@@ -298,10 +298,63 @@ namespace ERP_BanHang
 
             if (confirm == DialogResult.Yes)
             {
+                CapNhatTrangThaiGiaoCSDL(idDH, "Đang giao");
+
                 MessageBox.Show($"Đã phát yêu cầu điều phối vận chuyển cho đơn hàng [{idDH}] thành công!\nThông tin đơn đã được chuyển sang bộ phận vận chuyển.",
                                 "Phân công thành công",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Information);
+
+                LoadDataGiaoHang();
+            }
+        }
+
+        private void CapNhatTrangThaiGiaoCSDL(string idDH, string trangThaiMoi)
+        {
+            using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
+            {
+                try
+                {
+                    conn.Open();
+                    NpgsqlTransaction transaction = conn.BeginTransaction();
+
+                    try
+                    {
+                        string sqlGiaoHang = @"
+                            INSERT INTO GiaoHang (ID_DH, TrangThaiGiaoHang)
+                            VALUES (@ID_DH, @TrangThai)
+                            ON CONFLICT (ID_DH) 
+                            DO UPDATE SET TrangThaiGiaoHang = EXCLUDED.TrangThaiGiaoHang;";
+
+                        using (NpgsqlCommand cmd1 = new NpgsqlCommand(sqlGiaoHang, conn, transaction))
+                        {
+                            cmd1.Parameters.AddWithValue("@ID_DH", idDH);
+                            cmd1.Parameters.AddWithValue("@TrangThai", trangThaiMoi);
+                            cmd1.ExecuteNonQuery();
+                        }
+
+                        if (trangThaiMoi == "Đã giao")
+                        {
+                            string sqlHoaDon = "UPDATE HoaDon SET TrangThai = N'Đã thanh toán' WHERE ID_DH = @ID_DH;";
+                            using (NpgsqlCommand cmd2 = new NpgsqlCommand(sqlHoaDon, conn, transaction))
+                            {
+                                cmd2.Parameters.AddWithValue("@ID_DH", idDH);
+                                cmd2.ExecuteNonQuery();
+                            }
+                        }
+
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Lỗi cập nhật CSDL: " + ex.Message, "Lỗi PostgreSQL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
