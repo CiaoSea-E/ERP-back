@@ -1,4 +1,4 @@
-﻿using iText.IO.Image;
+using iText.IO.Image;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Layout;
@@ -294,31 +294,100 @@ namespace ERP_BanHang
 
         private void XuatFormRaPDF(Panel targetPanel, string filePath)
         {
-            Bitmap bmp = new Bitmap(targetPanel.Width, targetPanel.Height);
-            targetPanel.DrawToBitmap(bmp, new System.Drawing.Rectangle(0, 0, targetPanel.Width, targetPanel.Height));
-
-            using (MemoryStream ms = new MemoryStream())
+            // Chụp toàn bộ panel hóa đơn với độ nét cao
+            using (Bitmap bmp = new Bitmap(targetPanel.Width, targetPanel.Height))
             {
-                bmp.Save(ms, ImageFormat.Png);
-                byte[] imgBytes = ms.ToArray();
+                targetPanel.DrawToBitmap(bmp, new System.Drawing.Rectangle(0, 0, targetPanel.Width, targetPanel.Height));
+                SaveBitmapToPdf(bmp, filePath);
+            }
+        }
 
-                using (PdfWriter writer = new PdfWriter(filePath))
+        private static void SaveBitmapToPdf(Bitmap bmp, string filePath)
+        {
+            using (MemoryStream jpgStream = new MemoryStream())
+            {
+                // Nén JPEG chất lượng cao 95%
+                ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
+                EncoderParameters encParams = new EncoderParameters(1);
+                encParams.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 95L);
+                bmp.Save(jpgStream, jpgEncoder, encParams);
+                byte[] imgBytes = jpgStream.ToArray();
+
+                int width = bmp.Width;
+                int height = bmp.Height;
+
+                // Quy đổi sang đơn vị điểm PDF (Points: 72 pt / inch, màn hình 96 DPI)
+                double ptWidth = width * 72.0 / 96.0;
+                double ptHeight = height * 72.0 / 96.0;
+
+                using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+                using (BinaryWriter bw = new BinaryWriter(fs))
                 {
-                    using (PdfDocument pdfDoc = new PdfDocument(writer))
+                    var offsets = new System.Collections.Generic.List<long>();
+                    byte[] header = System.Text.Encoding.ASCII.GetBytes("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
+                    bw.Write(header);
+
+                    // 1 0 obj: Catalog
+                    offsets.Add(fs.Position);
+                    bw.Write(System.Text.Encoding.ASCII.GetBytes("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n"));
+
+                    // 2 0 obj: Pages
+                    offsets.Add(fs.Position);
+                    bw.Write(System.Text.Encoding.ASCII.GetBytes("2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n"));
+
+                    // 3 0 obj: Page
+                    string pageObjStr = string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                        "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {0:F2} {1:F2}] /Resources << /XObject << /Im1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n",
+                        ptWidth, ptHeight);
+                    offsets.Add(fs.Position);
+                    bw.Write(System.Text.Encoding.ASCII.GetBytes(pageObjStr));
+
+                    // 4 0 obj: Image XObject (JPEG DCTDecode)
+                    string imgHeaderStr = string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                        "4 0 obj\n<< /Type /XObject /Subtype /Image /Width {0} /Height {1} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length {2} >>\nstream\n",
+                        width, height, imgBytes.Length);
+                    offsets.Add(fs.Position);
+                    bw.Write(System.Text.Encoding.ASCII.GetBytes(imgHeaderStr));
+                    bw.Write(imgBytes);
+                    bw.Write(System.Text.Encoding.ASCII.GetBytes("\nendstream\nendobj\n"));
+
+                    // 5 0 obj: Content stream để đặt hình ảnh lên trang
+                    string contentStream = string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                        "q\n{0:F2} 0 0 {1:F2} 0 0 cm\n/Im1 Do\nQ\n",
+                        ptWidth, ptHeight);
+                    byte[] contentBytes = System.Text.Encoding.ASCII.GetBytes(contentStream);
+                    string contentObjStr = string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                        "5 0 obj\n<< /Length {0} >>\nstream\n{1}endstream\nendobj\n",
+                        contentBytes.Length, contentStream);
+                    offsets.Add(fs.Position);
+                    bw.Write(System.Text.Encoding.ASCII.GetBytes(contentObjStr));
+
+                    // Bảng xref
+                    long startxref = fs.Position;
+                    bw.Write(System.Text.Encoding.ASCII.GetBytes("xref\n0 6\n0000000000 65535 f \n"));
+                    foreach (var off in offsets)
                     {
-                        PageSize pageSize = new PageSize(targetPanel.Width, targetPanel.Height);
-                        Document doc = new Document(pdfDoc, pageSize);
-                        doc.SetMargins(0, 0, 0, 0);
-
-                        ImageData imageData = ImageDataFactory.Create(imgBytes);
-                        iText.Layout.Element.Image pdfImg = new iText.Layout.Element.Image(imageData);
-                        pdfImg.ScaleToFit(pageSize.GetWidth(), pageSize.GetHeight());
-
-                        doc.Add(pdfImg);
-                        doc.Close();
+                        bw.Write(System.Text.Encoding.ASCII.GetBytes(string.Format("{0:D10} 00000 n \n", off)));
                     }
+
+                    // trailer
+                    string trailer = string.Format("trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n{0}\n%%EOF\n", startxref);
+                    bw.Write(System.Text.Encoding.ASCII.GetBytes(trailer));
                 }
             }
+        }
+
+        private static ImageCodecInfo GetEncoder(ImageFormat format)
+        {
+            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
+            foreach (ImageCodecInfo codec in codecs)
+            {
+                if (codec.FormatID == format.Guid)
+                {
+                    return codec;
+                }
+            }
+            return null;
         }
     }
 }
