@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
@@ -74,6 +74,7 @@ namespace ERPKho1
         private void btnXacNhanHoanThanh_Click(object sender, EventArgs e)
         {
             if (!KiemTraQuyenQuanLyHoacAdmin("Xác nhận xuất kho")) return;
+
             if (targetRow == null) return;
 
             string maPX = targetRow.Table.Columns.Contains("MaPhieuXuat") ? targetRow["MaPhieuXuat"]?.ToString() :
@@ -90,16 +91,14 @@ namespace ERPKho1
             {
                 bool hasDeducted = false;
 
-                // -------------------------------------------------------------
                 // LUỒNG 1: Đọc chi tiết lấy hàng từ chitietlayhang
-                // -------------------------------------------------------------
                 string sqlGetItems = @"
                     SELECT 
-                        LTRIM(RTRIM(ctlh.maton)) AS maton, 
-                        ISNULL(NULLIF(ctlh.soluongthuclay, 0), ISNULL(ctlh.soluongcanlay, 0)) AS soluongxuat
+                        TRIM(ctlh.maton) AS maton, 
+                        COALESCE(NULLIF(ctlh.soluongthuclay, 0), ctlh.soluongcanlay, 0) AS soluongxuat
                     FROM chitietlayhang ctlh
-                    INNER JOIN danhsachlayhang dslh ON LTRIM(RTRIM(ctlh.madanhsach)) = LTRIM(RTRIM(dslh.madanhsach))
-                    WHERE LTRIM(RTRIM(dslh.maphieuxuat)) = LTRIM(RTRIM(@MaPX))";
+                    INNER JOIN danhsachlayhang dslh ON TRIM(ctlh.madanhsach) = TRIM(dslh.madanhsach)
+                    WHERE TRIM(dslh.maphieuxuat) = TRIM(@MaPX)";
 
                 DataTable dtItems = DatabaseHelper.ExecuteQuery(sqlGetItems, new SqlParameter[] { new SqlParameter("@MaPX", maPX) });
 
@@ -107,18 +106,17 @@ namespace ERPKho1
                 {
                     foreach (DataRow item in dtItems.Rows)
                     {
-                        string maTon = item["maton"]?.ToString()?.Trim() ?? "";
-                        if (string.IsNullOrEmpty(maTon)) continue;
-
+                        string maTon = item["maton"].ToString().Trim();
                         decimal soLuongXuat = Convert.ToDecimal(item["soluongxuat"]);
+
                         if (soLuongXuat <= 0) continue;
 
                         // Lấy thông tin Vị trí, Mã Lô, Mã Hàng từ tonkho
                         string sqlGetInfo = @"
-                            SELECT LTRIM(RTRIM(tk.mavitri)) AS mavitri, LTRIM(RTRIM(tk.malo)) AS malo, LTRIM(RTRIM(lh.mahang)) AS mahang 
+                            SELECT TRIM(tk.mavitri) AS mavitri, TRIM(tk.malo) AS malo, TRIM(lh.mahang) AS mahang 
                             FROM tonkho tk
-                            INNER JOIN lohang lh ON LTRIM(RTRIM(tk.malo)) = LTRIM(RTRIM(lh.malo))
-                            WHERE LTRIM(RTRIM(tk.maton)) = LTRIM(RTRIM(@MaTon))";
+                            INNER JOIN lohang lh ON TRIM(tk.malo) = TRIM(lh.malo)
+                            WHERE TRIM(tk.maton) = TRIM(@MaTon)";
 
                         DataTable dtInfo = DatabaseHelper.ExecuteQuery(sqlGetInfo, new SqlParameter[] { new SqlParameter("@MaTon", maTon) });
 
@@ -138,7 +136,7 @@ namespace ERPKho1
                             UPDATE tonkho
                             SET soluongton = CASE WHEN soluongton >= @SL THEN soluongton - @SL ELSE 0 END,
                                 soluongkhadung = CASE WHEN soluongkhadung >= @SL THEN soluongkhadung - @SL ELSE 0 END
-                            WHERE LTRIM(RTRIM(maton)) = LTRIM(RTRIM(@MaTon))";
+                            WHERE TRIM(maton) = TRIM(@MaTon)";
                         DatabaseHelper.ExecuteNonQuery(sqlUpTon, new SqlParameter[] {
                             new SqlParameter("@SL", soLuongXuat),
                             new SqlParameter("@MaTon", maTon)
@@ -150,21 +148,21 @@ namespace ERPKho1
                             string sqlUpLo = @"
                                 UPDATE lohang
                                 SET soluongcon = CASE WHEN soluongcon >= @SL THEN soluongcon - @SL ELSE 0 END,
-                                    trangthai = CASE WHEN (soluongcon - @SL) <= 0 THEN N'Hết hàng' ELSE trangthai END
-                                WHERE LTRIM(RTRIM(malo)) = LTRIM(RTRIM(@MaLo))";
+                                    trangthai = CASE WHEN (soluongcon - @SL) <= 0 THEN 'Hết hàng' ELSE trangthai END
+                                WHERE TRIM(malo) = TRIM(@MaLo)";
                             DatabaseHelper.ExecuteNonQuery(sqlUpLo, new SqlParameter[] {
                                 new SqlParameter("@SL", soLuongXuat),
                                 new SqlParameter("@MaLo", maLo)
                             });
                         }
 
-                        // 3. Trừ tổng tồn kho hàng hóa (bảng hanghoa)
+                        // 3. Trừ tổng tồn kho hàng hóa (bảng hanghoa - cột tonkho)
                         if (!string.IsNullOrEmpty(maHang))
                         {
                             string sqlUpHH = @"
                                 UPDATE hanghoa
-                                SET tonkho = CASE WHEN tonkho >= @SL THEN tonkho - @SL ELSE 0 END
-                                WHERE LTRIM(RTRIM(mahang)) = LTRIM(RTRIM(@MaHang))";
+                                SET tonkho = CASE WHEN tonkho >= CAST(@SL AS INT) THEN tonkho - CAST(@SL AS INT) ELSE 0 END
+                                WHERE TRIM(mahang) = TRIM(@MaHang)";
                             DatabaseHelper.ExecuteNonQuery(sqlUpHH, new SqlParameter[] {
                                 new SqlParameter("@SL", soLuongXuat),
                                 new SqlParameter("@MaHang", maHang)
@@ -174,13 +172,13 @@ namespace ERPKho1
                         // 4. Giải phóng vị trí kệ thành 'Trống' nếu hết hàng
                         if (!string.IsNullOrEmpty(maViTri))
                         {
-                            string sqlCheckVT = "SELECT ISNULL(SUM(soluongton), 0) FROM tonkho WHERE LTRIM(RTRIM(mavitri)) = LTRIM(RTRIM(@MaViTri))";
+                            string sqlCheckVT = "SELECT COALESCE(SUM(soluongton), 0) FROM tonkho WHERE TRIM(mavitri) = TRIM(@MaViTri)";
                             DataTable dtVT = DatabaseHelper.ExecuteQuery(sqlCheckVT, new SqlParameter[] { new SqlParameter("@MaViTri", maViTri) });
                             decimal totalTonVT = (dtVT != null && dtVT.Rows.Count > 0 && dtVT.Rows[0][0] != DBNull.Value) ? Convert.ToDecimal(dtVT.Rows[0][0]) : 0;
 
                             if (totalTonVT <= 0)
                             {
-                                string sqlFreeVT = "UPDATE vitriluutru SET trangthai = N'Trống' WHERE LTRIM(RTRIM(mavitri)) = LTRIM(RTRIM(@MaViTri))";
+                                string sqlFreeVT = "UPDATE vitriluutru SET trangthai = 'Trống' WHERE TRIM(mavitri) = TRIM(@MaViTri)";
                                 DatabaseHelper.ExecuteNonQuery(sqlFreeVT, new SqlParameter[] { new SqlParameter("@MaViTri", maViTri) });
                             }
                         }
@@ -189,17 +187,15 @@ namespace ERPKho1
                     }
                 }
 
-                // -------------------------------------------------------------
                 // LUỒNG 2: Nếu chitietlayhang trống, đọc trực tiếp từ chitietphieuxuat
-                // -------------------------------------------------------------
                 if (!hasDeducted)
                 {
                     string sqlGetPXItems = @"
                         SELECT 
-                            LTRIM(RTRIM(ctx.mahang)) AS mahang, 
-                            ISNULL(ctx.soluongyeucau, 0) AS soluongxuat
+                            TRIM(ctx.mahang) AS mahang, 
+                            COALESCE(ctx.soluongyeucau, 0) AS soluongxuat
                         FROM chitietphieuxuat ctx
-                        WHERE LTRIM(RTRIM(ctx.maphieuxuat)) = LTRIM(RTRIM(@MaPX))";
+                        WHERE TRIM(ctx.maphieuxuat) = TRIM(@MaPX)";
 
                     DataTable dtPXItems = DatabaseHelper.ExecuteQuery(sqlGetPXItems, new SqlParameter[] { new SqlParameter("@MaPX", maPX) });
 
@@ -207,28 +203,27 @@ namespace ERPKho1
                     {
                         foreach (DataRow pxRow in dtPXItems.Rows)
                         {
-                            string maHang = pxRow["mahang"]?.ToString()?.Trim() ?? "";
-                            if (string.IsNullOrEmpty(maHang)) continue;
-
+                            string maHang = pxRow["mahang"].ToString().Trim();
                             decimal qtyNeeded = Convert.ToDecimal(pxRow["soluongxuat"]);
+
                             if (qtyNeeded <= 0) continue;
 
                             // Trừ trực tiếp bảng hanghoa
                             string sqlUpHHDirect = @"
                                 UPDATE hanghoa
-                                SET tonkho = CASE WHEN tonkho >= @SL THEN tonkho - @SL ELSE 0 END
-                                WHERE LTRIM(RTRIM(mahang)) = LTRIM(RTRIM(@MaHang))";
+                                SET tonkho = CASE WHEN tonkho >= CAST(@SL AS INT) THEN tonkho - CAST(@SL AS INT) ELSE 0 END
+                                WHERE TRIM(mahang) = TRIM(@MaHang)";
                             DatabaseHelper.ExecuteNonQuery(sqlUpHHDirect, new SqlParameter[] {
                                 new SqlParameter("@SL", qtyNeeded),
                                 new SqlParameter("@MaHang", maHang)
                             });
 
-                            // Tìm các Lô / Vị trí kệ theo FEFO (Hạn sử dụng tăng dần) để trừ
+                            // Tìm các Lô / Vị trí kệ theo FEFO để trừ
                             string sqlFindTon = @"
-                                SELECT LTRIM(RTRIM(tk.maton)) AS maton, LTRIM(RTRIM(tk.malo)) AS malo, LTRIM(RTRIM(tk.mavitri)) AS mavitri, ISNULL(tk.soluongton, 0) AS soluongton
+                                SELECT TRIM(tk.maton) AS maton, TRIM(tk.malo) AS malo, TRIM(tk.mavitri) AS mavitri, COALESCE(tk.soluongton, 0) AS soluongton
                                 FROM tonkho tk
-                                INNER JOIN lohang lh ON LTRIM(RTRIM(tk.malo)) = LTRIM(RTRIM(lh.malo))
-                                WHERE LTRIM(RTRIM(lh.mahang)) = LTRIM(RTRIM(@MaHang)) AND ISNULL(tk.soluongton, 0) > 0
+                                INNER JOIN lohang lh ON TRIM(tk.malo) = TRIM(lh.malo)
+                                WHERE TRIM(lh.mahang) = TRIM(@MaHang) AND COALESCE(tk.soluongton, 0) > 0
                                 ORDER BY lh.hansudung ASC";
 
                             DataTable dtTonList = DatabaseHelper.ExecuteQuery(sqlFindTon, new SqlParameter[] { new SqlParameter("@MaHang", maHang) });
@@ -239,10 +234,9 @@ namespace ERPKho1
                                 foreach (DataRow tonRow in dtTonList.Rows)
                                 {
                                     if (remain <= 0) break;
-
-                                    string maTon = tonRow["maton"]?.ToString()?.Trim() ?? "";
-                                    string maLo = tonRow["malo"]?.ToString()?.Trim() ?? "";
-                                    string maViTri = tonRow["mavitri"]?.ToString()?.Trim() ?? "";
+                                    string maTon = tonRow["maton"].ToString().Trim();
+                                    string maLo = tonRow["malo"].ToString().Trim();
+                                    string maViTri = tonRow["mavitri"].ToString().Trim();
                                     decimal curTon = Convert.ToDecimal(tonRow["soluongton"]);
 
                                     decimal deduct = Math.Min(remain, curTon);
@@ -252,7 +246,7 @@ namespace ERPKho1
                                         UPDATE tonkho
                                         SET soluongton = CASE WHEN soluongton >= @SL THEN soluongton - @SL ELSE 0 END,
                                             soluongkhadung = CASE WHEN soluongkhadung >= @SL THEN soluongkhadung - @SL ELSE 0 END
-                                        WHERE LTRIM(RTRIM(maton)) = LTRIM(RTRIM(@MaTon))";
+                                        WHERE TRIM(maton) = TRIM(@MaTon)";
                                     DatabaseHelper.ExecuteNonQuery(sqlUpTK, new SqlParameter[] {
                                         new SqlParameter("@SL", deduct),
                                         new SqlParameter("@MaTon", maTon)
@@ -264,8 +258,8 @@ namespace ERPKho1
                                         string sqlUpLo = @"
                                             UPDATE lohang
                                             SET soluongcon = CASE WHEN soluongcon >= @SL THEN soluongcon - @SL ELSE 0 END,
-                                                trangthai = CASE WHEN (soluongcon - @SL) <= 0 THEN N'Hết hàng' ELSE trangthai END
-                                            WHERE LTRIM(RTRIM(malo)) = LTRIM(RTRIM(@MaLo))";
+                                                trangthai = CASE WHEN (soluongcon - @SL) <= 0 THEN 'Hết hàng' ELSE trangthai END
+                                            WHERE TRIM(malo) = TRIM(@MaLo)";
                                         DatabaseHelper.ExecuteNonQuery(sqlUpLo, new SqlParameter[] {
                                             new SqlParameter("@SL", deduct),
                                             new SqlParameter("@MaLo", maLo)
@@ -273,15 +267,12 @@ namespace ERPKho1
                                     }
 
                                     // Kiểm tra giải phóng kệ
-                                    if (!string.IsNullOrEmpty(maViTri))
+                                    string sqlCheckVT = "SELECT COALESCE(SUM(soluongton), 0) FROM tonkho WHERE TRIM(mavitri) = TRIM(@MaViTri)";
+                                    DataTable dtVT = DatabaseHelper.ExecuteQuery(sqlCheckVT, new SqlParameter[] { new SqlParameter("@MaViTri", maViTri) });
+                                    if (dtVT != null && dtVT.Rows.Count > 0 && Convert.ToDecimal(dtVT.Rows[0][0]) <= 0)
                                     {
-                                        string sqlCheckVT = "SELECT ISNULL(SUM(soluongton), 0) FROM tonkho WHERE LTRIM(RTRIM(mavitri)) = LTRIM(RTRIM(@MaViTri))";
-                                        DataTable dtVT = DatabaseHelper.ExecuteQuery(sqlCheckVT, new SqlParameter[] { new SqlParameter("@MaViTri", maViTri) });
-                                        if (dtVT != null && dtVT.Rows.Count > 0 && Convert.ToDecimal(dtVT.Rows[0][0]) <= 0)
-                                        {
-                                            string sqlFreeVT = "UPDATE vitriluutru SET trangthai = N'Trống' WHERE LTRIM(RTRIM(mavitri)) = LTRIM(RTRIM(@MaViTri))";
-                                            DatabaseHelper.ExecuteNonQuery(sqlFreeVT, new SqlParameter[] { new SqlParameter("@MaViTri", maViTri) });
-                                        }
+                                        string sqlFreeVT = "UPDATE vitriluutru SET trangthai = 'Trống' WHERE TRIM(mavitri) = TRIM(@MaViTri)";
+                                        DatabaseHelper.ExecuteNonQuery(sqlFreeVT, new SqlParameter[] { new SqlParameter("@MaViTri", maViTri) });
                                     }
 
                                     remain -= deduct;
@@ -291,12 +282,12 @@ namespace ERPKho1
                     }
                 }
 
-                // Cập nhật trạng thái phiếu xuất (Đã sửa CURRENT_TIMESTAMP -> GETDATE())
-                string sqlUpPX = "UPDATE phieuxuat SET trangthai = N'Hoàn tất xuất', ngayxacnhan = GETDATE() WHERE LTRIM(RTRIM(maphieuxuat)) = LTRIM(RTRIM(@MaPX))";
+                // Cập nhật trạng thái phiếu xuất
+                string sqlUpPX = "UPDATE phieuxuat SET trangthai = 'Hoàn tất xuất', ngayxacnhan = CURRENT_TIMESTAMP WHERE TRIM(maphieuxuat) = TRIM(@MaPX)";
                 DatabaseHelper.ExecuteNonQuery(sqlUpPX, new SqlParameter[] { new SqlParameter("@MaPX", maPX) });
 
                 // Cập nhật trạng thái danh sách lấy hàng
-                string sqlUpDS = "UPDATE danhsachlayhang SET trangthai = N'Đã hoàn thành' WHERE LTRIM(RTRIM(maphieuxuat)) = LTRIM(RTRIM(@MaPX))";
+                string sqlUpDS = "UPDATE danhsachlayhang SET trangthai = 'Đã hoàn thành' WHERE TRIM(maphieuxuat) = TRIM(@MaPX)";
                 DatabaseHelper.ExecuteNonQuery(sqlUpDS, new SqlParameter[] { new SqlParameter("@MaPX", maPX) });
 
                 MessageBox.Show($"Xác nhận xuất kho phiếu [{maPX}] thành công!\n", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);

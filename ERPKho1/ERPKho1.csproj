@@ -131,6 +131,12 @@
     <Compile Include="FrChuyenViTri.Designer.cs">
       <DependentUpon>FrChuyenViTri.cs</DependentUpon>
     </Compile>
+    <Compile Include="FrDangNhap.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FrDangNhap.Designer.cs">
+      <DependentUpon>FrDangNhap.cs</DependentUpon>
+    </Compile>
     <Compile Include="FrDuyetDieuChinhTonKho.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -289,6 +295,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FrChuyenViTri.resx">
       <DependentUpon>FrChuyenViTri.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FrDangNhap.resx">
+      <DependentUpon>FrDangNhap.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FrDuyetDieuChinhTonKho.resx">
       <DependentUpon>FrDuyetDieuChinhTonKho.cs</DependentUpon>

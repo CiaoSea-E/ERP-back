@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -143,12 +143,24 @@ namespace ERPKho1
                         if (!string.IsNullOrEmpty(pathExeDangNhap))
                         {
                             System.Diagnostics.Process.Start(pathExeDangNhap);
-                            Application.Exit(); // Đóng hoàn toàn ERP_BanHang
+                            Application.Exit();
                         }
                         else
                         {
-                            MessageBox.Show("Không tìm thấy file ứng dụng Đăng nhập (ERP_Khach.exe)!\nVui lòng kiểm tra lại thư mục chứa file.",
-                                            "Lỗi khởi chạy", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            UserSession.ClearSession();
+                            this.Hide();
+                            FrDangNhap frmLogin = new FrDangNhap();
+                            if (frmLogin.ShowDialog() == DialogResult.OK)
+                            {
+                                CapNhatThongTinNguoiDung();
+                                KiemTraPhanQuyenMain();
+                                OpenChildForm(new FrQLNhapKho(), btnQLNhapKho);
+                                this.Show();
+                            }
+                            else
+                            {
+                                this.Close();
+                            }
                         }
                     }
                     catch (Exception ex)
