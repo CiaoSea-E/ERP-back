@@ -49,12 +49,14 @@ namespace ERP_Khach
         // Hàm dùng chung để mở Form Đăng Nhập theo phân hệ
         private void MoFormDangNhap(string phanHe = "Bán hàng")
         {
-            
+            this.Hide();
             using (FormDangNhap login = new FormDangNhap(phanHe))
             {
                 login.ShowDialog();
             }
             this.Show();
+            this.WindowState = FormWindowState.Maximized;
+            this.BringToFront();
         }
     }
 }

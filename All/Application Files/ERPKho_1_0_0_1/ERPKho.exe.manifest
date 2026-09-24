@@ -30,14 +30,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ERPKho.exe" size="416768">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ERPKho.exe" size="418304">
       <assemblyIdentity name="ERPKho" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>nUiElknx2dCn5NrTbYLKbQW2Zy/5PT2VsrU+Sv8Tmpg=</dsig:DigestValue>
+        <dsig:DigestValue>xJsee97v/OCWNzGtQB3CiafqChEk+zexnmEuQ9YR/ms=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

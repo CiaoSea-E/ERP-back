@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -15,6 +15,7 @@ namespace ERPKho
 
         private void FrMain_Load(object sender, EventArgs e)
         {
+            this.WindowState = FormWindowState.Maximized;
             CapNhatThongTinNguoiDung();
             KiemTraPhanQuyenMain();
 
@@ -93,22 +94,81 @@ namespace ERPKho
 
         private void btnDangXuat_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Bạn có chắc muốn đăng xuất khỏi hệ thống?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            DialogResult confirm = MessageBox.Show(
+                "Bạn có chắc chắn muốn đăng xuất và quay lại màn hình chọn phân hệ?",
+                "Xác nhận đăng xuất",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (confirm == DialogResult.Yes)
             {
                 UserSession.ClearSession();
-                this.Hide();
 
-                FrDangNhap frmLogin = new FrDangNhap();
-                if (frmLogin.ShowDialog() == DialogResult.OK)
+                // 1. Tìm và hiển thị lại màn hình chọn phân hệ (LogInPhanHe) nếu đang chạy trong ERP_Khach
+                Form loginPhanHe = null;
+                foreach (Form f in Application.OpenForms)
                 {
-                    CapNhatThongTinNguoiDung();
-                    KiemTraPhanQuyenMain();
-                    OpenChildForm(new FrQLNhapKho(), btnQLNhapKho);
-                    this.Show();
+                    if (f.GetType().Name == "LogInPhanHe")
+                    {
+                        loginPhanHe = f;
+                        break;
+                    }
+                }
+
+                if (loginPhanHe != null)
+                {
+                    loginPhanHe.Show();
+                    loginPhanHe.WindowState = FormWindowState.Maximized;
+                    loginPhanHe.BringToFront();
+                    this.Close();
                 }
                 else
                 {
-                    this.Close();
+                    // 2. Nếu đang chạy độc lập, tự động tìm và khởi động ứng dụng tổng ERP_Khach.exe
+                    try
+                    {
+                        string baseDir = Application.StartupPath;
+                        string[] possiblePaths = new string[]
+                        {
+                            System.IO.Path.Combine(baseDir, "ERP_Khach.exe"),
+                            System.IO.Path.Combine(baseDir, "..", "ERP_Khach.exe"),
+                            System.IO.Path.Combine(baseDir, "..", "ERP_Khach", "ERP_Khach.exe"),
+                            System.IO.Path.GetFullPath(System.IO.Path.Combine(baseDir, @"..\ERP_BanHang\ERP_Khach\bin\Debug\ERP_Khach.exe")),
+                            System.IO.Path.GetFullPath(System.IO.Path.Combine(baseDir, @"..\..\..\..\ERP_BanHang\ERP_Khach\bin\Debug\ERP_Khach.exe")),
+                            System.IO.Path.GetFullPath(System.IO.Path.Combine(baseDir, @"..\..\..\..\ERP_BanHang\ERP_Khach\bin\Release\ERP_Khach.exe")),
+                            System.IO.Path.GetFullPath(System.IO.Path.Combine(baseDir, @"..\..\ERP_BanHang\ERP_Khach\bin\Debug\ERP_Khach.exe"))
+                        };
+
+                        string foundPath = null;
+                        foreach (string p in possiblePaths)
+                        {
+                            if (System.IO.File.Exists(p))
+                            {
+                                foundPath = p;
+                                break;
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(foundPath))
+                        {
+                            System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo
+                            {
+                                FileName = foundPath,
+                                WorkingDirectory = System.IO.Path.GetDirectoryName(foundPath),
+                                UseShellExecute = true
+                            };
+                            System.Diagnostics.Process.Start(psi);
+                            Application.Exit();
+                        }
+                        else
+                        {
+                            this.Close();
+                        }
+                    }
+                    catch
+                    {
+                        this.Close();
+                    }
                 }
             }
         }

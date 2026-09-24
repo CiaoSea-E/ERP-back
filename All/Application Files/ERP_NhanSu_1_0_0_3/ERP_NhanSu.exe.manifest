@@ -114,14 +114,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ERP_BanHang.exe" size="278528">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="ERP_BanHang.exe" size="280576">
       <assemblyIdentity name="ERP_BanHang" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>4EiHirbPG6erKNinuqXLbp0Gg+DgF1u2f0fTP8bwrFo=</dsig:DigestValue>
+        <dsig:DigestValue>N7xTIGgtcjZnvKfoh14seBYUUO6jr+JIEPlJr1fHXWI=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
