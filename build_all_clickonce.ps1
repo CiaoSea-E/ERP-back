@@ -226,4 +226,11 @@ Package-ClickOnceApp -appName "ERP_NhanSu" -folderName "ERP_NhanSu_1_0_0_3" -app
 # 6. KE_TOAN_TAI_CHINH
 Package-ClickOnceApp -appName "KE_TOAN_TAI_CHINH" -folderName "KE_TOAN_TAI_CHINH_1_0_0_0" -appVersion "1.0.0.0" -srcDir (Join-Path $ERP_REPO "ERP_Code\KE_TOAN_TAI_CHINH\bin\Release\net48") -mainExe "KE_TOAN_TAI_CHINH.exe"
 
-Write-Host "`nAll 6 ClickOnce packages successfully generated in D:\html\erp\All\All!"
+Write-Host "`nAll 6 ClickOnce packages successfully generated in All!"
+
+# Tu dong nen All.zip va All.rar
+$compressScript = Join-Path $ERP_REPO "scripts\compress_all.ps1"
+if (Test-Path $compressScript) {
+    Write-Host "`nDang tu dong nen All.zip va All.rar..."
+    & $compressScript
+}
