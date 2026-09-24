@@ -1,4 +1,4 @@
-﻿namespace ERP_BanHang
+namespace ERP_BanHang
 {
     partial class QlyDonHang
     {
@@ -53,6 +53,9 @@
             this.btnTabDaThanhToan = new System.Windows.Forms.Button();
             this.txtSearch = new System.Windows.Forms.TextBox();
             this.btnCreateOrder = new System.Windows.Forms.Button();
+            this.btnReload = new System.Windows.Forms.Button();
+            this.chkAutoReload = new System.Windows.Forms.CheckBox();
+            this.lblLastUpdate = new System.Windows.Forms.Label();
             this.lblTitle = new System.Windows.Forms.Label();
             this.pnlSidebar.SuspendLayout();
             this.pnlUserBottom.SuspendLayout();
@@ -321,6 +324,9 @@
             // 
             // pnlActionTool
             // 
+            this.pnlActionTool.Controls.Add(this.lblLastUpdate);
+            this.pnlActionTool.Controls.Add(this.chkAutoReload);
+            this.pnlActionTool.Controls.Add(this.btnReload);
             this.pnlActionTool.Controls.Add(this.pnlTabs);
             this.pnlActionTool.Controls.Add(this.txtSearch);
             this.pnlActionTool.Controls.Add(this.btnCreateOrder);
@@ -388,6 +394,7 @@
             // 
             this.btnCreateOrder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCreateOrder.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(13)))), ((int)(((byte)(110)))), ((int)(((byte)(253)))));
+            this.btnCreateOrder.Cursor = System.Windows.Forms.Cursors.Hand;
             this.btnCreateOrder.FlatAppearance.BorderSize = 0;
             this.btnCreateOrder.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCreateOrder.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
@@ -399,6 +406,52 @@
             this.btnCreateOrder.Text = "+ Tạo đơn mới";
             this.btnCreateOrder.UseVisualStyleBackColor = false;
             this.btnCreateOrder.Click += new System.EventHandler(this.btnCreateOrder_Click);
+            // 
+            // btnReload
+            // 
+            this.btnReload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnReload.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(167)))), ((int)(((byte)(69)))));
+            this.btnReload.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnReload.FlatAppearance.BorderSize = 0;
+            this.btnReload.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnReload.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnReload.ForeColor = System.Drawing.Color.White;
+            this.btnReload.Location = new System.Drawing.Point(775, 0);
+            this.btnReload.Name = "btnReload";
+            this.btnReload.Size = new System.Drawing.Size(115, 36);
+            this.btnReload.TabIndex = 6;
+            this.btnReload.Text = "🔄 Làm mới";
+            this.btnReload.UseVisualStyleBackColor = false;
+            this.btnReload.Click += new System.EventHandler(this.btnReload_Click);
+            // 
+            // chkAutoReload
+            // 
+            this.chkAutoReload.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkAutoReload.AutoSize = true;
+            this.chkAutoReload.Checked = true;
+            this.chkAutoReload.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkAutoReload.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.chkAutoReload.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.chkAutoReload.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
+            this.chkAutoReload.Location = new System.Drawing.Point(595, 7);
+            this.chkAutoReload.Name = "chkAutoReload";
+            this.chkAutoReload.Size = new System.Drawing.Size(168, 24);
+            this.chkAutoReload.TabIndex = 7;
+            this.chkAutoReload.Text = "⏱ Tự động tải lại (10s)";
+            this.chkAutoReload.UseVisualStyleBackColor = true;
+            this.chkAutoReload.CheckedChanged += new System.EventHandler(this.chkAutoReload_CheckedChanged);
+            // 
+            // lblLastUpdate
+            // 
+            this.lblLastUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblLastUpdate.AutoSize = true;
+            this.lblLastUpdate.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Italic);
+            this.lblLastUpdate.ForeColor = System.Drawing.Color.Gray;
+            this.lblLastUpdate.Location = new System.Drawing.Point(435, 9);
+            this.lblLastUpdate.Name = "lblLastUpdate";
+            this.lblLastUpdate.Size = new System.Drawing.Size(148, 20);
+            this.lblLastUpdate.TabIndex = 8;
+            this.lblLastUpdate.Text = "Cập nhật: --:--:--";
             // 
             // lblTitle
             // 
@@ -422,6 +475,7 @@
             this.Name = "QlyDonHang";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ERP Bán Hàng - Quản Lý Đơn Hàng";
+            this.Activated += new System.EventHandler(this.QlyDonHang_Activated);
             this.Load += new System.EventHandler(this.QlyDonHang_Load);
             this.pnlSidebar.ResumeLayout(false);
             this.pnlUserBottom.ResumeLayout(false);
@@ -459,6 +513,9 @@
         private System.Windows.Forms.Panel pnlActionTool;
         private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.Button btnCreateOrder;
+        private System.Windows.Forms.Button btnReload;
+        private System.Windows.Forms.CheckBox chkAutoReload;
+        private System.Windows.Forms.Label lblLastUpdate;
         private System.Windows.Forms.TextBox txtSearch;
         private System.Windows.Forms.DataGridView BangDonHang;
         private System.Windows.Forms.Panel pnlTabs;

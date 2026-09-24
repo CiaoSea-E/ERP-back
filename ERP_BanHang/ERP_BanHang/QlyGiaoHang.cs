@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Configuration;
 using System.Data;
 using Npgsql; // Đã đổi từ System.Data.SqlClient sang Npgsql
@@ -12,9 +12,38 @@ namespace ERP_BanHang
         private string connectionString = ConfigurationManager.ConnectionStrings["ERP_Connection"].ConnectionString;
         private DataTable dtGiaoHang;
 
+        private Timer autoReloadTimer;
+        private DateTime lastReloadTime = DateTime.MinValue;
+        private const int AUTO_RELOAD_INTERVAL = 10000; // 10 giây
+
         public QlyGiaoHang()
         {
             InitializeComponent();
+            KhoiTaoAutoReloadTimer();
+
+            this.FormClosing += (s, e) =>
+            {
+                autoReloadTimer?.Stop();
+                autoReloadTimer?.Dispose();
+            };
+        }
+
+        private void KhoiTaoAutoReloadTimer()
+        {
+            autoReloadTimer = new Timer();
+            autoReloadTimer.Interval = AUTO_RELOAD_INTERVAL;
+            autoReloadTimer.Tick += AutoReloadTimer_Tick;
+            autoReloadTimer.Start();
+        }
+
+        private void AutoReloadTimer_Tick(object sender, EventArgs e)
+        {
+            if (txtSearch.Focused || Control.MouseButtons != MouseButtons.None)
+            {
+                return;
+            }
+
+            LoadDataGiaoHang(isSilent: true);
         }
 
         private void QlyGiaoHang_Load(object sender, EventArgs e)
@@ -90,7 +119,7 @@ namespace ERP_BanHang
             dgvGiaoHang.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
 
-        private void LoadDataGiaoHang()
+        private void LoadDataGiaoHang(bool isSilent = false)
         {
             // PostgreSQL: Thay ISNULL thành COALESCE
             string query = @"
@@ -107,18 +136,68 @@ namespace ERP_BanHang
                 INNER JOIN KhachHang KH ON DH.ID_KH = KH.ID_KH
                 ORDER BY DH.NgayTao DESC";
 
-            using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
+            try
             {
-                try
+                int scrollIndex = -1;
+                string selectedId = null;
+                if (dgvGiaoHang != null && dgvGiaoHang.Rows.Count > 0)
+                {
+                    try
+                    {
+                        scrollIndex = dgvGiaoHang.FirstDisplayedScrollingRowIndex;
+                        if (dgvGiaoHang.CurrentRow != null && dgvGiaoHang.Columns.Contains("colIDDH"))
+                        {
+                            selectedId = dgvGiaoHang.CurrentRow.Cells["colIDDH"].Value?.ToString();
+                        }
+                    }
+                    catch { }
+                }
+
+                using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
                 {
                     conn.Open();
-                    NpgsqlDataAdapter da = new NpgsqlDataAdapter(query, conn);
-                    dtGiaoHang = new DataTable();
-                    da.Fill(dtGiaoHang);
-
-                    dgvGiaoHang.DataSource = dtGiaoHang;
+                    using (NpgsqlDataAdapter da = new NpgsqlDataAdapter(query, conn))
+                    {
+                        DataTable dt = new DataTable();
+                        da.Fill(dt);
+                        dtGiaoHang = dt;
+                    }
                 }
-                catch (Exception ex)
+
+                LocDuLieu();
+
+                if (dgvGiaoHang != null && dgvGiaoHang.Rows.Count > 0)
+                {
+                    try
+                    {
+                        if (!string.IsNullOrEmpty(selectedId))
+                        {
+                            foreach (DataGridViewRow row in dgvGiaoHang.Rows)
+                            {
+                                if (row.Cells["colIDDH"].Value?.ToString() == selectedId)
+                                {
+                                    dgvGiaoHang.CurrentCell = row.Cells[0];
+                                    break;
+                                }
+                            }
+                        }
+                        if (scrollIndex >= 0 && scrollIndex < dgvGiaoHang.Rows.Count)
+                        {
+                            dgvGiaoHang.FirstDisplayedScrollingRowIndex = scrollIndex;
+                        }
+                    }
+                    catch { }
+                }
+
+                lastReloadTime = DateTime.Now;
+                if (lblLastUpdate != null && !lblLastUpdate.IsDisposed)
+                {
+                    lblLastUpdate.Text = "Cập nhật: " + lastReloadTime.ToString("HH:mm:ss");
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!isSilent)
                 {
                     MessageBox.Show("Lỗi kết nối CSDL khi tải danh sách giao hàng: " + ex.Message, "Lỗi PostgreSQL", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
@@ -340,6 +419,27 @@ namespace ERP_BanHang
                 {
                     MessageBox.Show("Lỗi khi đăng xuất: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+            }
+        }
+
+        private void btnReload_Click(object sender, EventArgs e)
+        {
+            LoadDataGiaoHang(isSilent: false);
+        }
+
+        private void chkAutoReload_CheckedChanged(object sender, EventArgs e)
+        {
+            if (autoReloadTimer != null)
+            {
+                autoReloadTimer.Enabled = chkAutoReload.Checked;
+            }
+        }
+
+        private void QlyGiaoHang_Activated(object sender, EventArgs e)
+        {
+            if ((DateTime.Now - lastReloadTime).TotalSeconds > 5)
+            {
+                LoadDataGiaoHang(isSilent: true);
             }
         }
     }

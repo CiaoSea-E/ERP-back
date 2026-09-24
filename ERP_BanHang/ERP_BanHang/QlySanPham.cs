@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Configuration;
 using System.Data;
 using Npgsql; // Thay thế cho System.Data.SqlClient
@@ -14,9 +14,38 @@ namespace ERP_BanHang
         private DataTable dtSanPham;
         private bool isInitializing = true;
 
+        private Timer autoReloadTimer;
+        private DateTime lastReloadTime = DateTime.MinValue;
+        private const int AUTO_RELOAD_INTERVAL = 10000; // 10 giây
+
         public QlySanPham()
         {
             InitializeComponent();
+            KhoiTaoAutoReloadTimer();
+
+            this.FormClosing += (s, e) =>
+            {
+                autoReloadTimer?.Stop();
+                autoReloadTimer?.Dispose();
+            };
+        }
+
+        private void KhoiTaoAutoReloadTimer()
+        {
+            autoReloadTimer = new Timer();
+            autoReloadTimer.Interval = AUTO_RELOAD_INTERVAL;
+            autoReloadTimer.Tick += AutoReloadTimer_Tick;
+            autoReloadTimer.Start();
+        }
+
+        private void AutoReloadTimer_Tick(object sender, EventArgs e)
+        {
+            if (txtSearch.Focused || Control.MouseButtons != MouseButtons.None)
+            {
+                return;
+            }
+
+            LoadDataSanPham(isSilent: true);
         }
 
         private void QlySanPham_Load(object sender, EventArgs e)
@@ -102,7 +131,7 @@ namespace ERP_BanHang
             BangSanPham.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
 
-        private void LoadDataSanPham()
+        private void LoadDataSanPham(bool isSilent = false)
         {
             // JOIN giữa SanPham và HangHoa theo MaHang trong PostgreSQL
             string query = @"
@@ -117,18 +146,68 @@ namespace ERP_BanHang
                 INNER JOIN HangHoa HH ON SP.MaHang = HH.MaHang
                 ORDER BY SP.ID_SP ASC";
 
-            using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
+            try
             {
-                try
+                int scrollIndex = -1;
+                string selectedId = null;
+                if (BangSanPham != null && BangSanPham.Rows.Count > 0)
+                {
+                    try
+                    {
+                        scrollIndex = BangSanPham.FirstDisplayedScrollingRowIndex;
+                        if (BangSanPham.CurrentRow != null && BangSanPham.Columns.Contains("colIDSP"))
+                        {
+                            selectedId = BangSanPham.CurrentRow.Cells["colIDSP"].Value?.ToString();
+                        }
+                    }
+                    catch { }
+                }
+
+                using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
                 {
                     conn.Open();
-                    NpgsqlDataAdapter da = new NpgsqlDataAdapter(query, conn);
-                    dtSanPham = new DataTable();
-                    da.Fill(dtSanPham);
-
-                    BangSanPham.DataSource = dtSanPham;
+                    using (NpgsqlDataAdapter da = new NpgsqlDataAdapter(query, conn))
+                    {
+                        DataTable dt = new DataTable();
+                        da.Fill(dt);
+                        dtSanPham = dt;
+                    }
                 }
-                catch (Exception ex)
+
+                LocDuLieu();
+
+                if (BangSanPham != null && BangSanPham.Rows.Count > 0)
+                {
+                    try
+                    {
+                        if (!string.IsNullOrEmpty(selectedId))
+                        {
+                            foreach (DataGridViewRow row in BangSanPham.Rows)
+                            {
+                                if (row.Cells["colIDSP"].Value?.ToString() == selectedId)
+                                {
+                                    BangSanPham.CurrentCell = row.Cells[0];
+                                    break;
+                                }
+                            }
+                        }
+                        if (scrollIndex >= 0 && scrollIndex < BangSanPham.Rows.Count)
+                        {
+                            BangSanPham.FirstDisplayedScrollingRowIndex = scrollIndex;
+                        }
+                    }
+                    catch { }
+                }
+
+                lastReloadTime = DateTime.Now;
+                if (lblLastUpdate != null && !lblLastUpdate.IsDisposed)
+                {
+                    lblLastUpdate.Text = "Cập nhật: " + lastReloadTime.ToString("HH:mm:ss");
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!isSilent)
                 {
                     MessageBox.Show("Lỗi kết nối CSDL khi tải sản phẩm: " + ex.Message, "Lỗi PostgreSQL", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
@@ -335,6 +414,27 @@ namespace ERP_BanHang
                 {
                     MessageBox.Show("Lỗi khi đăng xuất: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+            }
+        }
+
+        private void btnReload_Click(object sender, EventArgs e)
+        {
+            LoadDataSanPham(isSilent: false);
+        }
+
+        private void chkAutoReload_CheckedChanged(object sender, EventArgs e)
+        {
+            if (autoReloadTimer != null)
+            {
+                autoReloadTimer.Enabled = chkAutoReload.Checked;
+            }
+        }
+
+        private void QlySanPham_Activated(object sender, EventArgs e)
+        {
+            if ((DateTime.Now - lastReloadTime).TotalSeconds > 5)
+            {
+                LoadDataSanPham(isSilent: true);
             }
         }
     }

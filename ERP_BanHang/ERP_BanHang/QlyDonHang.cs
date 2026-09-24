@@ -18,6 +18,11 @@ namespace ERP_BanHang
         private int selectedRowIndexForDelete = -1;
         private const int LONG_PRESS_DURATION = 1000;
 
+        // Tự động tải lại (Auto Reload) định kỳ
+        private Timer autoReloadTimer;
+        private DateTime lastReloadTime = DateTime.MinValue;
+        private const int AUTO_RELOAD_INTERVAL = 10000; // 10 giây
+
         // Biến lưu trạng thái tab hiện tại: false = Chưa thanh toán (mặc định), true = Đã thanh toán
         private bool isDaThanhToan = false;
 
@@ -29,6 +34,13 @@ namespace ERP_BanHang
         {
             InitializeComponent();
             KhoiTaoLongPressTimer();
+            KhoiTaoAutoReloadTimer();
+
+            this.FormClosing += (s, e) =>
+            {
+                autoReloadTimer?.Stop();
+                autoReloadTimer?.Dispose();
+            };
         }
 
         private void KhoiTaoLongPressTimer()
@@ -36,6 +48,25 @@ namespace ERP_BanHang
             longPressTimer = new Timer();
             longPressTimer.Interval = LONG_PRESS_DURATION;
             longPressTimer.Tick += LongPressTimer_Tick;
+        }
+
+        private void KhoiTaoAutoReloadTimer()
+        {
+            autoReloadTimer = new Timer();
+            autoReloadTimer.Interval = AUTO_RELOAD_INTERVAL;
+            autoReloadTimer.Tick += AutoReloadTimer_Tick;
+            autoReloadTimer.Start();
+        }
+
+        private void AutoReloadTimer_Tick(object sender, EventArgs e)
+        {
+            // Tránh reload khi người dùng đang nhập tìm kiếm hoặc đang thao tác nhấn giữ chuột
+            if (txtSearch.Focused || selectedRowIndexForDelete >= 0 || Control.MouseButtons != MouseButtons.None)
+            {
+                return;
+            }
+
+            LoadDataDonHang(isSilent: true);
         }
 
         private void QlyDonHang_Load(object sender, EventArgs e)
@@ -140,7 +171,7 @@ namespace ERP_BanHang
         // ==========================================
         // 2. TẢI DỮ LIỆU TỪ CSDL NEON/POSTGRESQL
         // ==========================================
-        private void LoadDataDonHang()
+        private void LoadDataDonHang(bool isSilent = false)
         {
             string query = @"
                 SELECT 
@@ -159,18 +190,68 @@ namespace ERP_BanHang
                 GROUP BY DH.ID_DH, KH.TenDoanhNghiep, NV.TenNV, DH.NgayTao, HD.TrangThai
                 ORDER BY DH.NgayTao DESC";
 
-            using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
+            try
             {
-                try
+                int scrollIndex = -1;
+                string selectedId = null;
+                if (BangDonHang != null && BangDonHang.Rows.Count > 0)
+                {
+                    try
+                    {
+                        scrollIndex = BangDonHang.FirstDisplayedScrollingRowIndex;
+                        if (BangDonHang.CurrentRow != null && BangDonHang.Columns.Contains("colMaDonHang"))
+                        {
+                            selectedId = BangDonHang.CurrentRow.Cells["colMaDonHang"].Value?.ToString();
+                        }
+                    }
+                    catch { }
+                }
+
+                using (NpgsqlConnection conn = new NpgsqlConnection(connectionString))
                 {
                     conn.Open();
-                    NpgsqlDataAdapter da = new NpgsqlDataAdapter(query, conn);
-                    dtDonHang = new DataTable();
-                    da.Fill(dtDonHang);
-
-                    LocDuLieu();
+                    using (NpgsqlDataAdapter da = new NpgsqlDataAdapter(query, conn))
+                    {
+                        DataTable dt = new DataTable();
+                        da.Fill(dt);
+                        dtDonHang = dt;
+                    }
                 }
-                catch (Exception ex)
+
+                LocDuLieu();
+
+                if (BangDonHang != null && BangDonHang.Rows.Count > 0)
+                {
+                    try
+                    {
+                        if (!string.IsNullOrEmpty(selectedId))
+                        {
+                            foreach (DataGridViewRow row in BangDonHang.Rows)
+                            {
+                                if (row.Cells["colMaDonHang"].Value?.ToString() == selectedId)
+                                {
+                                    BangDonHang.CurrentCell = row.Cells[0];
+                                    break;
+                                }
+                            }
+                        }
+                        if (scrollIndex >= 0 && scrollIndex < BangDonHang.Rows.Count)
+                        {
+                            BangDonHang.FirstDisplayedScrollingRowIndex = scrollIndex;
+                        }
+                    }
+                    catch { }
+                }
+
+                lastReloadTime = DateTime.Now;
+                if (lblLastUpdate != null && !lblLastUpdate.IsDisposed)
+                {
+                    lblLastUpdate.Text = "Cập nhật: " + lastReloadTime.ToString("HH:mm:ss");
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!isSilent)
                 {
                     MessageBox.Show("Lỗi kết nối CSDL PostgreSQL: " + ex.Message, "Lỗi PostgreSQL", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
@@ -413,12 +494,34 @@ namespace ERP_BanHang
 
                 ChiTietHoaDon chiTietHoaDonForm = new ChiTietHoaDon(maDonHang);
                 chiTietHoaDonForm.ShowDialog();
+                LoadDataDonHang(isSilent: true);
             }
         }
 
         // ==========================================
-        // 7. ĐIỀU HƯỚNG MENU SIDEBAR
+        // 7. ĐIỀU HƯỚNG MENU SIDEBAR VÀ CÁC THAO TÁC TẢI LẠI
         // ==========================================
+        private void btnReload_Click(object sender, EventArgs e)
+        {
+            LoadDataDonHang(isSilent: false);
+        }
+
+        private void chkAutoReload_CheckedChanged(object sender, EventArgs e)
+        {
+            if (autoReloadTimer != null)
+            {
+                autoReloadTimer.Enabled = chkAutoReload.Checked;
+            }
+        }
+
+        private void QlyDonHang_Activated(object sender, EventArgs e)
+        {
+            if ((DateTime.Now - lastReloadTime).TotalSeconds > 5)
+            {
+                LoadDataDonHang(isSilent: true);
+            }
+        }
+
         private void btnSanPham_Click(object sender, EventArgs e)
         {
             this.Hide();
@@ -454,10 +557,8 @@ namespace ERP_BanHang
         private void btnCreateOrder_Click(object sender, EventArgs e)
         {
             TaoDonHang taoDonHang = new TaoDonHang();
-            if (taoDonHang.ShowDialog() == DialogResult.OK)
-            {
-                LoadDataDonHang();
-            }
+            taoDonHang.ShowDialog();
+            LoadDataDonHang(isSilent: false);
         }
 
         private void btnThongKe_Click(object sender, EventArgs e)
