@@ -20,19 +20,14 @@ set "EXE_PATH=%CODE_DIR%ERP_BanHang\ERP_Khach\bin\Debug\ERP_Khach.exe"
 :: Dong cac tien trinh ERP cu dang chay ngam neu co
 powershell -Command "Stop-Process -Name 'ERP_Khach','ERP_BanHang','ERP_NhanSu','ERPKho','ERP_Logistics','KE_TOAN_TAI_CHINH' -Force -ErrorAction SilentlyContinue"
 
-:: Neu chua co file .exe thi tien hanh bien dich
-if not exist "%EXE_PATH%" (
-    echo [1/2] Dang khoi phuc thu vien NuGet va bien dich giai phap...
-    if exist "%CODE_DIR%nuget.exe" (
-        "%CODE_DIR%nuget.exe" restore "%CODE_DIR%ERP.sln" >nul 2>&1
-    )
-    dotnet msbuild "%CODE_DIR%ERP.sln" /t:Build /p:Configuration=Debug /p:GenerateResourceMSBuildArchitecture=CurrentArchitecture /p:GenerateResourceMSBuildRuntime=CurrentRuntime /v:minimal
-    if %ERRORLEVEL% NEQ 0 (
-        echo.
-        echo [LOI] Bien dich that bai! Vui long kiem tra loi phia tren.
-        pause
-        exit /b %ERRORLEVEL%
-    )
+:: Kiem tra va bien dich ma nguon neu co thay doi
+echo [1/2] Dang kiem tra va cap nhat bien dich ma nguon...
+dotnet msbuild "%CODE_DIR%ERP.sln" /t:Build /p:Configuration=Debug /p:GenerateResourceMSBuildArchitecture=CurrentArchitecture /p:GenerateResourceMSBuildRuntime=CurrentRuntime /v:minimal
+if %ERRORLEVEL% NEQ 0 (
+    echo.
+    echo [LOI] Bien dich that bai! Vui long kiem tra loi phia tren.
+    pause
+    exit /b %ERRORLEVEL%
 )
 
 echo [2/2] Dang khoi chay Master Portal (ERP_Khach)...
