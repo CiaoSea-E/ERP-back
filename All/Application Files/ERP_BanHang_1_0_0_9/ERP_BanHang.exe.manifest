@@ -121,7 +121,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>lPHh/Os5ztMT964C6SWl8tl5fIKvGC3QcQT7Zpph+cc=</dsig:DigestValue>
+        <dsig:DigestValue>wns5iGi8/v3uw3UFtuR9xnrAo4pbdDIva5Yew14YUMM=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -569,13 +569,13 @@
       </hash>
     </dependentAssembly>
   </dependency>
-  <file name="ERP_BanHang.exe.config" size="2629">
+  <file name="ERP_BanHang.exe.config" size="2585">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>ccLatK19sX79x81AddaTy2PWC3jnS6ASoiOapLX1JV0=</dsig:DigestValue>
+      <dsig:DigestValue>enczwtxdBLQ5P16OgtihqZ9pyv/xV9OrXYtw+IRCly8=</dsig:DigestValue>
     </hash>
   </file>
 </asmv1:assembly>

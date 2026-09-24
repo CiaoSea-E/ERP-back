@@ -68,11 +68,48 @@ SELECT LEFT('L' || REPLACE(gen_random_uuid()::text,'-',''),20),@Ma,n.ID_NV,
        COALESCE(n.LuongCoBan,0),0,0,ROUND(COALESCE(n.LuongCoBan,0)*0.08,0),0,
        COALESCE(n.LuongCoBan,0)-ROUND(COALESCE(n.LuongCoBan,0)*0.08,0)
 FROM NhanVien n
-WHERE COALESCE(n.TrangThai,'Đang làm việc')<>'Nghỉ việc'
-  AND (@PhongBan='Toàn công ty' OR COALESCE(n.PhongBan,'Toàn công ty')=@PhongBan);",
+LEFT JOIN PhongBan pb ON pb.maPhongBan = COALESCE(n.maPhongBan, n.phongban)
+WHERE COALESCE(n.TrangThai,'Đang làm việc') NOT IN ('Nghỉ việc')
+  AND (@PhongBan='Toàn công ty' 
+       OR COALESCE(n.PhongBan,'Toàn công ty')=@PhongBan
+       OR COALESCE(n.maPhongBan,'')=@PhongBan
+       OR COALESCE(pb.tenPhongBan,'')=@PhongBan);",
                         Db.P("@Ma", maBangLuong), Db.P("@PhongBan", department));
                     if (inserted == 0)
                         throw new InvalidOperationException("Không có nhân viên đang làm việc thuộc phòng ban đã chọn.");
+                    Execute(connection, transaction, @"
+UPDATE BangLuong SET tongTienLuong=COALESCE((SELECT SUM(thucLinh) FROM ChiTietLuongNhanVien WHERE maBangLuong=@Ma),0)
+WHERE maBangLuong=@Ma;", Db.P("@Ma", maBangLuong));
+                    transaction.Commit();
+                }
+                catch { transaction.Rollback(); throw; }
+            }
+        }
+
+        public void DongBoLuongTuNhanSu(string maBangLuong)
+        {
+            using (NpgsqlConnection connection = Db.OpenConnection())
+            using (NpgsqlTransaction transaction = connection.BeginTransaction())
+            {
+                try
+                {
+                    DataTable header = Query(connection, transaction,
+                        "SELECT trangThai FROM BangLuong WHERE maBangLuong=@Ma FOR UPDATE",
+                        Db.P("@Ma", maBangLuong));
+                    if (header.Rows.Count == 0) throw new InvalidOperationException("Không tìm thấy bảng lương.");
+                    if (Convert.ToString(header.Rows[0]["trangThai"]) != "Nháp")
+                        throw new InvalidOperationException("Chỉ bảng lương Nháp mới được đồng bộ lại lương từ nhân sự.");
+
+                    Execute(connection, transaction, @"
+UPDATE ChiTietLuongNhanVien AS c
+SET luongCoBan = COALESCE(n.LuongCoBan, 0),
+    khauTruBHXH = ROUND(COALESCE(n.LuongCoBan, 0) * 0.08, 0),
+    thucLinh = CASE WHEN COALESCE(n.LuongCoBan, 0) + c.phuCap + c.thuong - ROUND(COALESCE(n.LuongCoBan, 0) * 0.08, 0) - c.thueTNCN < 0 THEN 0
+                    ELSE COALESCE(n.LuongCoBan, 0) + c.phuCap + c.thuong - ROUND(COALESCE(n.LuongCoBan, 0) * 0.08, 0) - c.thueTNCN END
+FROM NhanVien AS n
+WHERE c.ID_NV = n.ID_NV AND c.maBangLuong = @Ma;",
+                        Db.P("@Ma", maBangLuong));
+
                     Execute(connection, transaction, @"
 UPDATE BangLuong SET tongTienLuong=COALESCE((SELECT SUM(thucLinh) FROM ChiTietLuongNhanVien WHERE maBangLuong=@Ma),0)
 WHERE maBangLuong=@Ma;", Db.P("@Ma", maBangLuong));

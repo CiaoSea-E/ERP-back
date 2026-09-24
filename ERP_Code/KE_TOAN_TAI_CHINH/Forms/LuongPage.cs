@@ -35,6 +35,7 @@ namespace KeToanTaiChinh.Forms
             actions.Controls.Add(Ui.Button("Gửi duyệt", Submit, Ui.Primary));
             actions.Controls.Add(Ui.Button("Sửa khoản lương", EditDetail, Color.FromArgb(111, 66, 193)));
             actions.Controls.Add(Ui.Button("Tính lương", Calculate, Color.FromArgb(253, 126, 20)));
+            actions.Controls.Add(Ui.Button("Đồng bộ từ Nhân sự", SyncFromHr, Color.FromArgb(13, 110, 253)));
             Controls.Add(split); Controls.Add(actions); Controls.Add(filters); Controls.Add(title);
         }
         private void LoadData()
@@ -60,6 +61,12 @@ namespace KeToanTaiChinh.Forms
         }
         private static void Set(DataGridView g, string n, string t) { if (g.Columns.Contains(n)) g.Columns[n].HeaderText = t; }
         private void Create(object sender, EventArgs e) { using (LuongEditForm f = new LuongEditForm()) if (f.ShowDialog(FindForm()) == DialogResult.OK) LoadData(); }
+        private void SyncFromHr(object sender, EventArgs e)
+        {
+            string id = Ui.SelectedId(headers,"MaBangLuong"); if (id == null) { Ui.Info("Hãy chọn bảng lương."); return; }
+            if (!Ui.Confirm("Cập nhật lại Lương cơ bản và BHXH của các nhân viên theo Hồ sơ nhân viên mới nhất cho bảng lương Nháp này?", "Đồng bộ lương")) return;
+            try { service.DongBoLuongTuNhanSu(id); Ui.Info("Đồng bộ lương cơ bản từ hồ sơ nhân sự thành công."); LoadData(); } catch (Exception ex) { Ui.Error(ex); }
+        }
         private void Calculate(object sender, EventArgs e)
         {
             string id = Ui.SelectedId(headers,"MaBangLuong"); if (id == null) { Ui.Info("Hãy chọn bảng lương."); return; }

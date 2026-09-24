@@ -8,7 +8,7 @@ namespace KeToanTaiChinh.Models
         public string Id { get; set; }
         public string Name { get; set; }
         public decimal Value { get; set; }
-        public string Display { get { return Id + " - " + Name; } }
+        public string Display { get { return string.Equals(Id, Name, StringComparison.OrdinalIgnoreCase) ? Name : Id + " - " + Name; } }
     }
 
     internal sealed class ChungTuInput

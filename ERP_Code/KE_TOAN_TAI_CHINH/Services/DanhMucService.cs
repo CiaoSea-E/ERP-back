@@ -38,6 +38,9 @@ ORDER BY hanThanhToan;",
         public List<LookupItem> PhongBan()
         {
             DataTable table = Db.Query(@"
+SELECT maPhongBan AS Id, tenPhongBan AS Name, CAST(0 AS DECIMAL(18,2)) AS Value
+FROM PhongBan
+UNION ALL
 SELECT DISTINCT COALESCE(NULLIF(LTRIM(RTRIM(PhongBan)), ''), 'Toàn công ty') AS Id,
        COALESCE(NULLIF(LTRIM(RTRIM(PhongBan)), ''), 'Toàn công ty') AS Name,
        CAST(0 AS DECIMAL(18,2)) AS Value
