@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using ERP.BLL;
 using ERP.DTO;
@@ -88,7 +88,17 @@ namespace ERP
             else
             {
                 this.Text = "Thêm mới Lệnh Điều Xe";
-                txtID_PhieuTra.Enabled = true;
+                
+                try
+                {
+                    txtID_PhieuTra.Text = bll.SinhMaPhieu();
+                }
+                catch
+                {
+                    txtID_PhieuTra.Text = "PTH001";
+                }
+                txtID_PhieuTra.Enabled = false;
+
                 dtpNgayTra.Value = DateTime.Now;
                 if (cboTrangThai.Items.Count > 0)
                     cboTrangThai.SelectedIndex = 0;

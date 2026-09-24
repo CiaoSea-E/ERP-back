@@ -54,15 +54,21 @@ namespace ERP.DAL
                 : connectionString;
         }
 
-        // 1. Lấy toàn bộ danh sách đơn vận chuyển
+        // 1. Lấy toàn bộ danh sách đơn vận chuyển (kèm Mã Đơn Hàng & Khách Hàng)
         public List<DonVanChuyen> GetAll()
         {
             List<DonVanChuyen> list = new List<DonVanChuyen>();
-            const string query = @"SELECT DVC.ID_DonVC, DVC.BienSoXe, DVC.MaDVC, DVC.ID_SP, DVC.SoLuongGiao, DVC.ThoiGianKhoiHanh, DVC.TrangThaiDon,
-                                          COALESCE(HH.TenHang, SP.LoaiSP) AS TenHang
+            const string query = @"SELECT DVC.ID_DonVC, DVC.ID_DH, DVC.BienSoXe, DVC.MaDVC, DVC.ID_SP, DVC.SoLuongGiao, COALESCE(DVC.trong_luong, 0) AS trong_luong, DVC.ThoiGianKhoiHanh, DVC.TrangThaiDon,
+                                          COALESCE(HH.TenHang, SP.LoaiSP) AS TenHang,
+                                          KH.TenDoanhNghiep AS TenKhachHang,
+                                          COALESCE(GH.DiaChiGiaoHang, KH.DiaChi) AS DiaChiGiao,
+                                          COALESCE(GH.SDTNguoiNhan, KH.SDT) AS SDTKhachHang
                                    FROM DonVanChuyen DVC
                                    LEFT JOIN SanPham SP ON DVC.ID_SP = SP.ID_SP
                                    LEFT JOIN HangHoa HH ON SP.MaHang = HH.MaHang
+                                   LEFT JOIN DonHang DH ON DVC.ID_DH = DH.ID_DH
+                                   LEFT JOIN KhachHang KH ON DH.ID_KH = KH.ID_KH
+                                   LEFT JOIN GiaoHang GH ON DH.ID_DH = GH.ID_DH
                                    ORDER BY DVC.ThoiGianKhoiHanh DESC";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
@@ -76,11 +82,16 @@ namespace ERP.DAL
                         list.Add(new DonVanChuyen
                         {
                             ID_DonVC = reader["ID_DonVC"] != DBNull.Value ? reader["ID_DonVC"].ToString() : string.Empty,
+                            ID_DH = reader["ID_DH"] != DBNull.Value ? reader["ID_DH"].ToString() : string.Empty,
                             BienSoXe = reader["BienSoXe"] != DBNull.Value ? reader["BienSoXe"].ToString() : string.Empty,
                             MaDVC = reader["MaDVC"] != DBNull.Value ? reader["MaDVC"].ToString() : string.Empty,
                             ID_SP = reader["ID_SP"] != DBNull.Value ? reader["ID_SP"].ToString() : string.Empty,
                             TenHang = reader["TenHang"] != DBNull.Value ? reader["TenHang"].ToString() : string.Empty,
+                            TenKhachHang = reader["TenKhachHang"] != DBNull.Value ? reader["TenKhachHang"].ToString() : string.Empty,
+                            DiaChiGiao = reader["DiaChiGiao"] != DBNull.Value ? reader["DiaChiGiao"].ToString() : string.Empty,
+                            SDTKhachHang = reader["SDTKhachHang"] != DBNull.Value ? reader["SDTKhachHang"].ToString() : string.Empty,
                             SoLuongGiao = reader["SoLuongGiao"] != DBNull.Value ? Convert.ToInt32(reader["SoLuongGiao"]) : 0,
+                            TrongLuong = reader["trong_luong"] != DBNull.Value ? Convert.ToDecimal(reader["trong_luong"]) : 0,
                             ThoiGianKhoiHanh = reader["ThoiGianKhoiHanh"] != DBNull.Value ? Convert.ToDateTime(reader["ThoiGianKhoiHanh"]) : DateTime.MinValue,
                             TrangThaiDon = reader["TrangThaiDon"] != DBNull.Value ? reader["TrangThaiDon"].ToString() : string.Empty
                         });
@@ -92,11 +103,17 @@ namespace ERP.DAL
 
         public DonVanChuyen GetByID(string id)
         {
-            const string query = @"SELECT DVC.ID_DonVC, DVC.BienSoXe, DVC.MaDVC, DVC.ID_SP, DVC.SoLuongGiao, DVC.ThoiGianKhoiHanh, DVC.TrangThaiDon,
-                                          COALESCE(HH.TenHang, SP.LoaiSP) AS TenHang
+            const string query = @"SELECT DVC.ID_DonVC, DVC.ID_DH, DVC.BienSoXe, DVC.MaDVC, DVC.ID_SP, DVC.SoLuongGiao, COALESCE(DVC.trong_luong, 0) AS trong_luong, DVC.ThoiGianKhoiHanh, DVC.TrangThaiDon,
+                                          COALESCE(HH.TenHang, SP.LoaiSP) AS TenHang,
+                                          KH.TenDoanhNghiep AS TenKhachHang,
+                                          COALESCE(GH.DiaChiGiaoHang, KH.DiaChi) AS DiaChiGiao,
+                                          COALESCE(GH.SDTNguoiNhan, KH.SDT) AS SDTKhachHang
                                    FROM DonVanChuyen DVC
                                    LEFT JOIN SanPham SP ON DVC.ID_SP = SP.ID_SP
                                    LEFT JOIN HangHoa HH ON SP.MaHang = HH.MaHang
+                                   LEFT JOIN DonHang DH ON DVC.ID_DH = DH.ID_DH
+                                   LEFT JOIN KhachHang KH ON DH.ID_KH = KH.ID_KH
+                                   LEFT JOIN GiaoHang GH ON DH.ID_DH = GH.ID_DH
                                    WHERE DVC.ID_DonVC = @ID_DonVC";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
@@ -111,11 +128,16 @@ namespace ERP.DAL
                         return new DonVanChuyen
                         {
                             ID_DonVC = reader["ID_DonVC"] != DBNull.Value ? reader["ID_DonVC"].ToString() : string.Empty,
+                            ID_DH = reader["ID_DH"] != DBNull.Value ? reader["ID_DH"].ToString() : string.Empty,
                             BienSoXe = reader["BienSoXe"] != DBNull.Value ? reader["BienSoXe"].ToString() : string.Empty,
                             MaDVC = reader["MaDVC"] != DBNull.Value ? reader["MaDVC"].ToString() : string.Empty,
                             ID_SP = reader["ID_SP"] != DBNull.Value ? reader["ID_SP"].ToString() : string.Empty,
                             TenHang = reader["TenHang"] != DBNull.Value ? reader["TenHang"].ToString() : string.Empty,
+                            TenKhachHang = reader["TenKhachHang"] != DBNull.Value ? reader["TenKhachHang"].ToString() : string.Empty,
+                            DiaChiGiao = reader["DiaChiGiao"] != DBNull.Value ? reader["DiaChiGiao"].ToString() : string.Empty,
+                            SDTKhachHang = reader["SDTKhachHang"] != DBNull.Value ? reader["SDTKhachHang"].ToString() : string.Empty,
                             SoLuongGiao = reader["SoLuongGiao"] != DBNull.Value ? Convert.ToInt32(reader["SoLuongGiao"]) : 0,
+                            TrongLuong = reader["trong_luong"] != DBNull.Value ? Convert.ToDecimal(reader["trong_luong"]) : 0,
                             ThoiGianKhoiHanh = reader["ThoiGianKhoiHanh"] != DBNull.Value ? Convert.ToDateTime(reader["ThoiGianKhoiHanh"]) : DateTime.MinValue,
                             TrangThaiDon = reader["TrangThaiDon"] != DBNull.Value ? reader["TrangThaiDon"].ToString() : string.Empty
                         };
@@ -125,13 +147,13 @@ namespace ERP.DAL
             return null;
         }
 
-        // 2. Thêm mới đơn vận chuyển
+        // 2. Thêm mới đơn vận chuyển (Tự động đồng bộ trạng thái sang Bán hàng và Xe)
         public bool Insert(DonVanChuyen don)
         {
             const string query = @"INSERT INTO DonVanChuyen
-                                    (ID_DonVC, BienSoXe, MaDVC, ID_SP, SoLuongGiao, ThoiGianKhoiHanh, TrangThaiDon)
+                                    (ID_DonVC, ID_DH, BienSoXe, MaDVC, ID_SP, SoLuongGiao, trong_luong, ThoiGianKhoiHanh, TrangThaiDon)
                                    VALUES
-                                    (@ID_DonVC, @BienSoXe, @MaDVC, @ID_SP, @SoLuongGiao, @ThoiGianKhoiHanh, @TrangThaiDon)";
+                                    (@ID_DonVC, @ID_DH, @BienSoXe, @MaDVC, @ID_SP, @SoLuongGiao, @TrongLuong, @ThoiGianKhoiHanh, @TrangThaiDon)";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
             {
@@ -143,18 +165,27 @@ namespace ERP.DAL
                         using (NpgsqlCommand command = new NpgsqlCommand(query, connection, transaction))
                         {
                             command.Parameters.Add(new NpgsqlParameter("@ID_DonVC", NpgsqlDbType.Varchar) { Value = (object)don.ID_DonVC ?? DBNull.Value });
+                            command.Parameters.Add(new NpgsqlParameter("@ID_DH", NpgsqlDbType.Varchar) { Value = (object)don.ID_DH ?? DBNull.Value });
                             command.Parameters.Add(new NpgsqlParameter("@BienSoXe", NpgsqlDbType.Varchar) { Value = (object)don.BienSoXe ?? DBNull.Value });
                             command.Parameters.Add(new NpgsqlParameter("@MaDVC", NpgsqlDbType.Varchar) { Value = (object)don.MaDVC ?? DBNull.Value });
                             command.Parameters.Add(new NpgsqlParameter("@ID_SP", NpgsqlDbType.Varchar) { Value = (object)don.ID_SP ?? DBNull.Value });
                             command.Parameters.Add(new NpgsqlParameter("@SoLuongGiao", NpgsqlDbType.Integer) { Value = don.SoLuongGiao });
+                            command.Parameters.Add(new NpgsqlParameter("@TrongLuong", NpgsqlDbType.Numeric) { Value = don.TrongLuong });
                             command.Parameters.Add(new NpgsqlParameter("@ThoiGianKhoiHanh", NpgsqlDbType.Timestamp) { Value = don.ThoiGianKhoiHanh });
                             command.Parameters.Add(new NpgsqlParameter("@TrangThaiDon", NpgsqlDbType.Varchar) { Value = (object)don.TrangThaiDon ?? DBNull.Value });
                             command.ExecuteNonQuery();
                         }
 
+                        // Đồng bộ trạng thái xe và bán hàng
                         if (don.TrangThaiDon == "Đang vận chuyển")
                         {
                             CapNhatTrangThaiXe(connection, transaction, don.BienSoXe, "Đang vận chuyển");
+                            DongBoTrangThaiBanHang(connection, transaction, don.ID_DH, "Đang giao", "Đang giao");
+                        }
+                        else if (don.TrangThaiDon == "Hoàn thành")
+                        {
+                            CapNhatTrangThaiXe(connection, transaction, don.BienSoXe, "Đang rảnh");
+                            DongBoTrangThaiBanHang(connection, transaction, don.ID_DH, "Đã giao", "Đã giao", true);
                         }
 
                         transaction.Commit();
@@ -169,7 +200,7 @@ namespace ERP.DAL
             }
         }
 
-        // 3. Cập nhật đơn vận chuyển
+        // 3. Cập nhật đơn vận chuyển (Tự động đồng bộ trạng thái 2 chiều)
         public bool Update(DonVanChuyen don)
         {
             using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
@@ -181,7 +212,8 @@ namespace ERP.DAL
                     {
                         string oldBienSo = null;
                         string oldTrangThai = null;
-                        const string qOld = "SELECT BienSoXe, TrangThaiDon FROM DonVanChuyen WHERE ID_DonVC = @ID_DonVC";
+                        string oldIdDH = null;
+                        const string qOld = "SELECT BienSoXe, TrangThaiDon, ID_DH FROM DonVanChuyen WHERE ID_DonVC = @ID_DonVC";
                         using (NpgsqlCommand cmdOld = new NpgsqlCommand(qOld, connection, transaction))
                         {
                             cmdOld.Parameters.Add(new NpgsqlParameter("@ID_DonVC", NpgsqlDbType.Varchar) { Value = don.ID_DonVC });
@@ -191,34 +223,59 @@ namespace ERP.DAL
                                 {
                                     oldBienSo = r["BienSoXe"] != DBNull.Value ? r["BienSoXe"].ToString() : null;
                                     oldTrangThai = r["TrangThaiDon"] != DBNull.Value ? r["TrangThaiDon"].ToString() : null;
+                                    oldIdDH = r["ID_DH"] != DBNull.Value ? r["ID_DH"].ToString() : null;
                                 }
                             }
                         }
 
                         const string query = @"UPDATE DonVanChuyen
-                                               SET BienSoXe = @BienSoXe,
-                                                   MaDVC = @MaDVC,
-                                                   ID_SP = @ID_SP,
-                                                   SoLuongGiao = @SoLuongGiao,
-                                                   ThoiGianKhoiHanh = @ThoiGianKhoiHanh,
-                                                   TrangThaiDon = @TrangThaiDon
-                                               WHERE ID_DonVC = @ID_DonVC";
+                                                SET ID_DH = @ID_DH,
+                                                    BienSoXe = @BienSoXe,
+                                                    MaDVC = @MaDVC,
+                                                    ID_SP = @ID_SP,
+                                                    SoLuongGiao = @SoLuongGiao,
+                                                    trong_luong = @TrongLuong,
+                                                    ThoiGianKhoiHanh = @ThoiGianKhoiHanh,
+                                                    TrangThaiDon = @TrangThaiDon
+                                                WHERE ID_DonVC = @ID_DonVC";
 
                         using (NpgsqlCommand command = new NpgsqlCommand(query, connection, transaction))
                         {
                             command.Parameters.Add(new NpgsqlParameter("@ID_DonVC", NpgsqlDbType.Varchar) { Value = (object)don.ID_DonVC ?? DBNull.Value });
+                            command.Parameters.Add(new NpgsqlParameter("@ID_DH", NpgsqlDbType.Varchar) { Value = (object)don.ID_DH ?? DBNull.Value });
                             command.Parameters.Add(new NpgsqlParameter("@BienSoXe", NpgsqlDbType.Varchar) { Value = (object)don.BienSoXe ?? DBNull.Value });
                             command.Parameters.Add(new NpgsqlParameter("@MaDVC", NpgsqlDbType.Varchar) { Value = (object)don.MaDVC ?? DBNull.Value });
                             command.Parameters.Add(new NpgsqlParameter("@ID_SP", NpgsqlDbType.Varchar) { Value = (object)don.ID_SP ?? DBNull.Value });
                             command.Parameters.Add(new NpgsqlParameter("@SoLuongGiao", NpgsqlDbType.Integer) { Value = don.SoLuongGiao });
+                            command.Parameters.Add(new NpgsqlParameter("@TrongLuong", NpgsqlDbType.Numeric) { Value = don.TrongLuong });
                             command.Parameters.Add(new NpgsqlParameter("@ThoiGianKhoiHanh", NpgsqlDbType.Timestamp) { Value = don.ThoiGianKhoiHanh });
                             command.Parameters.Add(new NpgsqlParameter("@TrangThaiDon", NpgsqlDbType.Varchar) { Value = (object)don.TrangThaiDon ?? DBNull.Value });
                             command.ExecuteNonQuery();
                         }
 
+                        // Xử lý trạng thái xe và bán hàng
                         if (don.TrangThaiDon == "Đang vận chuyển")
                         {
                             CapNhatTrangThaiXe(connection, transaction, don.BienSoXe, "Đang vận chuyển");
+                            DongBoTrangThaiBanHang(connection, transaction, don.ID_DH, "Đang giao", "Đang giao");
+                            if (!string.IsNullOrEmpty(oldBienSo) && !string.Equals(oldBienSo, don.BienSoXe, StringComparison.OrdinalIgnoreCase))
+                            {
+                                GiaiPhongXeNeuRanh(connection, transaction, oldBienSo, don.ID_DonVC);
+                            }
+                        }
+                        else if (don.TrangThaiDon == "Hoàn thành")
+                        {
+                            GiaiPhongXeNeuRanh(connection, transaction, don.BienSoXe, don.ID_DonVC);
+                            DongBoTrangThaiBanHang(connection, transaction, don.ID_DH, "Đã giao", "Đã giao", true);
+                            if (!string.IsNullOrEmpty(oldBienSo) && !string.Equals(oldBienSo, don.BienSoXe, StringComparison.OrdinalIgnoreCase))
+                            {
+                                GiaiPhongXeNeuRanh(connection, transaction, oldBienSo, don.ID_DonVC);
+                            }
+                        }
+                        else if (don.TrangThaiDon == "Đã hủy")
+                        {
+                            GiaiPhongXeNeuRanh(connection, transaction, don.BienSoXe, don.ID_DonVC);
+                            DongBoTrangThaiBanHang(connection, transaction, don.ID_DH, "Chưa giao", "Đã duyệt");
                             if (!string.IsNullOrEmpty(oldBienSo) && !string.Equals(oldBienSo, don.BienSoXe, StringComparison.OrdinalIgnoreCase))
                             {
                                 GiaiPhongXeNeuRanh(connection, transaction, oldBienSo, don.ID_DonVC);
@@ -226,11 +283,18 @@ namespace ERP.DAL
                         }
                         else
                         {
+                            // Khởi tạo
                             GiaiPhongXeNeuRanh(connection, transaction, don.BienSoXe, don.ID_DonVC);
                             if (!string.IsNullOrEmpty(oldBienSo) && !string.Equals(oldBienSo, don.BienSoXe, StringComparison.OrdinalIgnoreCase))
                             {
                                 GiaiPhongXeNeuRanh(connection, transaction, oldBienSo, don.ID_DonVC);
                             }
+                        }
+
+                        // Nếu thay đổi mã đơn hàng, hoàn nguyên đơn hàng cũ
+                        if (!string.IsNullOrEmpty(oldIdDH) && !string.Equals(oldIdDH, don.ID_DH, StringComparison.OrdinalIgnoreCase))
+                        {
+                            DongBoTrangThaiBanHang(connection, transaction, oldIdDH, "Chưa giao", "Đã duyệt");
                         }
 
                         transaction.Commit();
@@ -257,7 +321,8 @@ namespace ERP.DAL
                     {
                         string oldBienSo = null;
                         string oldTrangThai = null;
-                        const string qOld = "SELECT BienSoXe, TrangThaiDon FROM DonVanChuyen WHERE ID_DonVC = @ID_DonVC";
+                        string oldIdDH = null;
+                        const string qOld = "SELECT BienSoXe, TrangThaiDon, ID_DH FROM DonVanChuyen WHERE ID_DonVC = @ID_DonVC";
                         using (NpgsqlCommand cmdOld = new NpgsqlCommand(qOld, connection, transaction))
                         {
                             cmdOld.Parameters.Add(new NpgsqlParameter("@ID_DonVC", NpgsqlDbType.Varchar) { Value = id });
@@ -267,6 +332,7 @@ namespace ERP.DAL
                                 {
                                     oldBienSo = r["BienSoXe"] != DBNull.Value ? r["BienSoXe"].ToString() : null;
                                     oldTrangThai = r["TrangThaiDon"] != DBNull.Value ? r["TrangThaiDon"].ToString() : null;
+                                    oldIdDH = r["ID_DH"] != DBNull.Value ? r["ID_DH"].ToString() : null;
                                 }
                             }
                         }
@@ -278,9 +344,14 @@ namespace ERP.DAL
                             command.ExecuteNonQuery();
                         }
 
-                        if (oldTrangThai == "Đang vận chuyển" && !string.IsNullOrEmpty(oldBienSo))
+                        if (!string.IsNullOrEmpty(oldBienSo))
                         {
                             GiaiPhongXeNeuRanh(connection, transaction, oldBienSo, id);
+                        }
+
+                        if (!string.IsNullOrEmpty(oldIdDH))
+                        {
+                            DongBoTrangThaiBanHang(connection, transaction, oldIdDH, "Chưa giao", "Đã duyệt");
                         }
 
                         transaction.Commit();
@@ -295,21 +366,29 @@ namespace ERP.DAL
             }
         }
 
-        // 5. Tìm kiếm theo ID_DonVC, BienSoXe hoặc MaDVC (dùng LIKE)
+        // 5. Tìm kiếm theo ID_DonVC, ID_DH, BienSoXe hoặc MaDVC (dùng LIKE)
         public List<DonVanChuyen> Search(string keyword)
         {
             List<DonVanChuyen> list = new List<DonVanChuyen>();
-            const string query = @"SELECT DVC.ID_DonVC, DVC.BienSoXe, DVC.MaDVC, DVC.ID_SP, DVC.SoLuongGiao, DVC.ThoiGianKhoiHanh, DVC.TrangThaiDon,
-                                          COALESCE(HH.TenHang, SP.LoaiSP) AS TenHang
+            const string query = @"SELECT DVC.ID_DonVC, DVC.ID_DH, DVC.BienSoXe, DVC.MaDVC, DVC.ID_SP, DVC.SoLuongGiao, DVC.ThoiGianKhoiHanh, DVC.TrangThaiDon,
+                                          COALESCE(HH.TenHang, SP.LoaiSP) AS TenHang,
+                                          KH.TenDoanhNghiep AS TenKhachHang,
+                                          COALESCE(GH.DiaChiGiaoHang, KH.DiaChi) AS DiaChiGiao,
+                                          COALESCE(GH.SDTNguoiNhan, KH.SDT) AS SDTKhachHang
                                    FROM DonVanChuyen DVC
                                    LEFT JOIN SanPham SP ON DVC.ID_SP = SP.ID_SP
                                    LEFT JOIN HangHoa HH ON SP.MaHang = HH.MaHang
+                                   LEFT JOIN DonHang DH ON DVC.ID_DH = DH.ID_DH
+                                   LEFT JOIN KhachHang KH ON DH.ID_KH = KH.ID_KH
+                                   LEFT JOIN GiaoHang GH ON DH.ID_DH = GH.ID_DH
                                    WHERE DVC.ID_DonVC LIKE @Keyword
+                                      OR DVC.ID_DH LIKE @Keyword
                                       OR DVC.BienSoXe LIKE @Keyword
                                       OR DVC.MaDVC LIKE @Keyword
                                       OR DVC.ID_SP LIKE @Keyword
                                       OR HH.TenHang LIKE @Keyword
                                       OR SP.LoaiSP LIKE @Keyword
+                                      OR KH.TenDoanhNghiep LIKE @Keyword
                                    ORDER BY DVC.ThoiGianKhoiHanh DESC";
 
             using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
@@ -326,10 +405,14 @@ namespace ERP.DAL
                         list.Add(new DonVanChuyen
                         {
                             ID_DonVC = reader["ID_DonVC"] != DBNull.Value ? reader["ID_DonVC"].ToString() : string.Empty,
+                            ID_DH = reader["ID_DH"] != DBNull.Value ? reader["ID_DH"].ToString() : string.Empty,
                             BienSoXe = reader["BienSoXe"] != DBNull.Value ? reader["BienSoXe"].ToString() : string.Empty,
                             MaDVC = reader["MaDVC"] != DBNull.Value ? reader["MaDVC"].ToString() : string.Empty,
                             ID_SP = reader["ID_SP"] != DBNull.Value ? reader["ID_SP"].ToString() : string.Empty,
                             TenHang = reader["TenHang"] != DBNull.Value ? reader["TenHang"].ToString() : string.Empty,
+                            TenKhachHang = reader["TenKhachHang"] != DBNull.Value ? reader["TenKhachHang"].ToString() : string.Empty,
+                            DiaChiGiao = reader["DiaChiGiao"] != DBNull.Value ? reader["DiaChiGiao"].ToString() : string.Empty,
+                            SDTKhachHang = reader["SDTKhachHang"] != DBNull.Value ? reader["SDTKhachHang"].ToString() : string.Empty,
                             SoLuongGiao = reader["SoLuongGiao"] != DBNull.Value ? Convert.ToInt32(reader["SoLuongGiao"]) : 0,
                             ThoiGianKhoiHanh = reader["ThoiGianKhoiHanh"] != DBNull.Value ? Convert.ToDateTime(reader["ThoiGianKhoiHanh"]) : DateTime.MinValue,
                             TrangThaiDon = reader["TrangThaiDon"] != DBNull.Value ? reader["TrangThaiDon"].ToString() : string.Empty
@@ -538,6 +621,68 @@ namespace ERP.DAL
             return list;
         }
 
+        // 7.1 Lấy danh sách xe khả dụng kèm tải trọng (dùng cho ComboBox hiển thị)
+        public List<XeKhaDungItem> GetDanhSachXeKhaDungKemTaiTrong()
+        {
+            List<XeKhaDungItem> list = new List<XeKhaDungItem>();
+            const string query = @"SELECT BienSoXe, LoaiXe, COALESCE(TaiTrong, 0) AS TaiTrong
+                                   FROM PhuongTien
+                                   WHERE (KichHoat = true OR KichHoat IS NULL)
+                                     AND (TrangThaiXe = 'Đang rảnh' OR TrangThaiXe = 'Sẵn sàng' OR TrangThaiXe IS NULL)
+                                     AND BienSoXe NOT IN (
+                                         SELECT BienSoXe
+                                         FROM DonVanChuyen
+                                         WHERE TrangThaiDon = 'Đang vận chuyển'
+                                           AND BienSoXe IS NOT NULL
+                                     )
+                                     AND BienSoXe NOT IN (
+                                         SELECT BienSoXe
+                                         FROM PhieuTraHang
+                                         WHERE TrangThai IN ('Chờ xử lý', 'Đang thu hồi', 'Đang lấy hàng', 'Đang vận chuyển')
+                                           AND BienSoXe IS NOT NULL
+                                     )
+                                   ORDER BY BienSoXe ASC";
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                connection.Open();
+                using (NpgsqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new XeKhaDungItem
+                        {
+                            BienSoXe = reader["BienSoXe"] != DBNull.Value ? reader["BienSoXe"].ToString() : string.Empty,
+                            LoaiXe = reader["LoaiXe"] != DBNull.Value ? reader["LoaiXe"].ToString() : string.Empty,
+                            TaiTrong = reader["TaiTrong"] != DBNull.Value ? Convert.ToDecimal(reader["TaiTrong"]) : 0
+                        });
+                    }
+                }
+            }
+            return list;
+        }
+
+        // 7.2 Lấy tải trọng quy chuẩn (Kg) của xe theo biển số
+        public decimal LayTaiTrongXe(string bienSoXe)
+        {
+            if (string.IsNullOrWhiteSpace(bienSoXe)) return 0;
+            const string query = "SELECT TaiTrong FROM PhuongTien WHERE BienSoXe = @BienSoXe";
+            using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                command.Parameters.Add(new NpgsqlParameter("@BienSoXe", NpgsqlDbType.Varchar) { Value = bienSoXe });
+                connection.Open();
+                object obj = command.ExecuteScalar();
+                if (obj != null && obj != DBNull.Value && decimal.TryParse(obj.ToString(), out decimal tt))
+                {
+                    // Nếu <= 50 quy ước là Tấn, đổi sang Kg (* 1000)
+                    return tt <= 50 ? tt * 1000 : tt;
+                }
+            }
+            return 0;
+        }
+
         // 8. Lấy danh sách MaDVC từ bảng DiemVanChuyen
         public List<string> GetDanhSachDVC()
         {
@@ -638,6 +783,150 @@ namespace ERP.DAL
         public void ThemDon(DonVanChuyen don)
         {
             Insert(don);
+        }
+
+        // Tự động đồng bộ trạng thái sang phân hệ Bán hàng (GiaoHang & DonHang)
+        private void DongBoTrangThaiBanHang(NpgsqlConnection connection, NpgsqlTransaction transaction, string idDH, string trangThaiGiao, string trangThaiDonHang, bool isHoanThanh = false)
+        {
+            if (string.IsNullOrWhiteSpace(idDH)) return;
+
+            // 1. Cập nhật bảng GiaoHang
+            string qGH = isHoanThanh
+                ? "UPDATE GiaoHang SET TrangThaiGiaoHang = @TrangThaiGiao, NgayNhan = NOW() WHERE ID_DH = @ID_DH"
+                : "UPDATE GiaoHang SET TrangThaiGiaoHang = @TrangThaiGiao WHERE ID_DH = @ID_DH";
+
+            using (NpgsqlCommand cmdGH = new NpgsqlCommand(qGH, connection, transaction))
+            {
+                cmdGH.Parameters.Add(new NpgsqlParameter("@TrangThaiGiao", NpgsqlDbType.Varchar) { Value = trangThaiGiao });
+                cmdGH.Parameters.Add(new NpgsqlParameter("@ID_DH", NpgsqlDbType.Varchar) { Value = idDH });
+                cmdGH.ExecuteNonQuery();
+            }
+
+            // 2. Cập nhật bảng DonHang
+            if (!string.IsNullOrWhiteSpace(trangThaiDonHang))
+            {
+                const string qDH = "UPDATE DonHang SET TrangThai = @TrangThai WHERE ID_DH = @ID_DH";
+                using (NpgsqlCommand cmdDH = new NpgsqlCommand(qDH, connection, transaction))
+                {
+                    cmdDH.Parameters.Add(new NpgsqlParameter("@TrangThai", NpgsqlDbType.Varchar) { Value = trangThaiDonHang });
+                    cmdDH.Parameters.Add(new NpgsqlParameter("@ID_DH", NpgsqlDbType.Varchar) { Value = idDH });
+                    cmdDH.ExecuteNonQuery();
+                }
+            }
+        }
+
+        // Lấy danh sách các đơn hàng từ Bán hàng cần được giao
+        public List<DonHangChoGiaoItem> GetDanhSachDonHangChoGiao()
+        {
+            List<DonHangChoGiaoItem> list = new List<DonHangChoGiaoItem>();
+            const string query = @"
+                SELECT 
+                    DH.ID_DH,
+                    DH.ID_KH,
+                    KH.TenDoanhNghiep AS TenKhachHang,
+                    COALESCE(GH.DiaChiGiaoHang, KH.DiaChi) AS DiaChiGiao,
+                    COALESCE(GH.SDTNguoiNhan, KH.SDT) AS SDT,
+                    CTDH.ID_SP,
+                    COALESCE(HH.TenHang, SP.LoaiSP, CTDH.ID_SP) AS TenSP,
+                    COALESCE(CTDH.SoLuong, 1) AS SoLuongDat,
+                    COALESCE(GH.TrangThaiGiaoHang, 'Chưa giao') AS TrangThaiGiao
+                FROM DonHang DH
+                INNER JOIN KhachHang KH ON DH.ID_KH = KH.ID_KH
+                LEFT JOIN GiaoHang GH ON DH.ID_DH = GH.ID_DH
+                LEFT JOIN (
+                    SELECT DISTINCT ON (ID_DH) ID_DH, ID_SP, SoLuong 
+                    FROM ChiTietDonHang 
+                    ORDER BY ID_DH, SoLuong DESC
+                ) CTDH ON DH.ID_DH = CTDH.ID_DH
+                LEFT JOIN SanPham SP ON CTDH.ID_SP = SP.ID_SP
+                LEFT JOIN HangHoa HH ON SP.MaHang = HH.MaHang
+                WHERE COALESCE(GH.TrangThaiGiaoHang, 'Chưa giao') NOT IN ('Đã giao', 'Hoàn thành')
+                  AND DH.TrangThai NOT IN ('Đã giao', 'Đã hủy')
+                ORDER BY DH.NgayTao DESC";
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                connection.Open();
+                using (NpgsqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new DonHangChoGiaoItem
+                        {
+                            ID_DH = reader["ID_DH"] != DBNull.Value ? reader["ID_DH"].ToString() : string.Empty,
+                            ID_KH = reader["ID_KH"] != DBNull.Value ? reader["ID_KH"].ToString() : string.Empty,
+                            TenKhachHang = reader["TenKhachHang"] != DBNull.Value ? reader["TenKhachHang"].ToString() : string.Empty,
+                            DiaChiGiao = reader["DiaChiGiao"] != DBNull.Value ? reader["DiaChiGiao"].ToString() : string.Empty,
+                            SDT = reader["SDT"] != DBNull.Value ? reader["SDT"].ToString() : string.Empty,
+                            ID_SP = reader["ID_SP"] != DBNull.Value ? reader["ID_SP"].ToString() : string.Empty,
+                            TenSP = reader["TenSP"] != DBNull.Value ? reader["TenSP"].ToString() : string.Empty,
+                            SoLuongDat = reader["SoLuongDat"] != DBNull.Value ? Convert.ToInt32(reader["SoLuongDat"]) : 0,
+                            TrangThaiGiao = reader["TrangThaiGiao"] != DBNull.Value ? reader["TrangThaiGiao"].ToString() : string.Empty
+                        });
+                    }
+                }
+            }
+            return list;
+        }
+
+        // Kiểm tra xem đơn hàng bán có đang nằm trong chuyến vận chuyển nào chưa hoàn tất không (Check trùng)
+        public bool KiemTraDonHangDangVanChuyen(string idDH, string excludeIdDonVC, out string lyDo)
+        {
+            lyDo = string.Empty;
+            if (string.IsNullOrWhiteSpace(idDH)) return false;
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+            {
+                connection.Open();
+                const string query = @"SELECT ID_DonVC, TrangThaiDon 
+                                       FROM DonVanChuyen 
+                                       WHERE ID_DH = @ID_DH 
+                                         AND TrangThaiDon IN ('Khởi tạo', 'Đang vận chuyển')
+                                         AND (@ExcludeIdDonVC IS NULL OR ID_DonVC <> @ExcludeIdDonVC)
+                                       LIMIT 1";
+                using (NpgsqlCommand cmd = new NpgsqlCommand(query, connection))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter("@ID_DH", NpgsqlDbType.Varchar) { Value = idDH });
+                    cmd.Parameters.Add(new NpgsqlParameter("@ExcludeIdDonVC", NpgsqlDbType.Varchar) { Value = (object)excludeIdDonVC ?? DBNull.Value });
+                    using (NpgsqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            string idVC = reader["ID_DonVC"].ToString();
+                            string tt = reader["TrangThaiDon"].ToString();
+                            lyDo = $"Đơn hàng [{idDH}] đã được gắn vào Đơn vận chuyển [{idVC}] (Trạng thái: {tt}). Không thể tạo trùng!";
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        // Lấy số lượng đặt tối đa của đơn hàng
+        public int LaySoLuongDatCuaDonHang(string idDH, string idSP)
+        {
+            if (string.IsNullOrWhiteSpace(idDH)) return int.MaxValue;
+            using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+            {
+                connection.Open();
+                const string query = @"SELECT COALESCE(SUM(SoLuong), 0) 
+                                       FROM ChiTietDonHang 
+                                       WHERE ID_DH = @ID_DH
+                                         AND (@ID_SP IS NULL OR ID_SP = @ID_SP)";
+                using (NpgsqlCommand cmd = new NpgsqlCommand(query, connection))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter("@ID_DH", NpgsqlDbType.Varchar) { Value = idDH });
+                    cmd.Parameters.Add(new NpgsqlParameter("@ID_SP", NpgsqlDbType.Varchar) { Value = (object)idSP ?? DBNull.Value });
+                    object res = cmd.ExecuteScalar();
+                    if (res != null && res != DBNull.Value)
+                    {
+                        return Convert.ToInt32(res);
+                    }
+                }
+            }
+            return 0;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using ERP.DAL;
 using ERP.DTO;
@@ -18,6 +18,11 @@ namespace ERP.BLL
         public PhieuTraHangBLL(string connectionString)
         {
             dal = new PhieuTraHangDAL(connectionString);
+        }
+
+        public string SinhMaPhieu()
+        {
+            return dal.GetNextID();
         }
 
         public List<PhieuTraHang> GetAll()

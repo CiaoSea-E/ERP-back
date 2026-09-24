@@ -15,14 +15,19 @@ namespace HR_Management.BLL
             return _dal.GetOverview();
         }
 
+        public CompanyPayrollSummaryDTO GetCompanyPayrollSummary()
+        {
+            return _dal.GetCompanyPayrollSummary();
+        }
+
         public DataTable GetDepartmentStats()
         {
             return _dal.GetDepartmentStats();
         }
 
-        public DataTable GetEducationStats()
+        public DataTable GetContractTypeStats()
         {
-            return _dal.GetEducationStats();
+            return _dal.GetContractTypeStats();
         }
 
         public List<ThongKeBaoCaoDTO> GetAllReports()
@@ -45,6 +50,12 @@ namespace HR_Management.BLL
                 return false;
             }
 
+            if (string.IsNullOrWhiteSpace(dto.NoiDung))
+            {
+                error = "Nội dung báo cáo không được để trống!";
+                return false;
+            }
+
             if (string.IsNullOrWhiteSpace(dto.MaBaoCao))
             {
                 dto.MaBaoCao = _dal.GenerateNextId();
@@ -57,6 +68,58 @@ namespace HR_Management.BLL
             catch (Exception ex)
             {
                 error = "Lỗi lưu báo cáo: " + ex.Message;
+                return false;
+            }
+        }
+
+        public bool UpdateReport(ThongKeBaoCaoDTO dto, out string error)
+        {
+            error = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(dto.TenBaoCao))
+            {
+                error = "Tên báo cáo không được để trống!";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.NoiDung))
+            {
+                error = "Nội dung báo cáo không được để trống!";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.MaBaoCao))
+            {
+                error = "Mã báo cáo không hợp lệ!";
+                return false;
+            }
+
+            try
+            {
+                return _dal.UpdateReport(dto);
+            }
+            catch (Exception ex)
+            {
+                error = "Lỗi cập nhật báo cáo: " + ex.Message;
+                return false;
+            }
+        }
+
+        public bool DeleteReport(string maBaoCao, out string error)
+        {
+            error = string.Empty;
+            try
+            {
+                if (string.IsNullOrWhiteSpace(maBaoCao))
+                {
+                    error = "Mã báo cáo không hợp lệ!";
+                    return false;
+                }
+                return _dal.DeleteReport(maBaoCao);
+            }
+            catch (Exception ex)
+            {
+                error = "Lỗi xóa báo cáo: " + ex.Message;
                 return false;
             }
         }

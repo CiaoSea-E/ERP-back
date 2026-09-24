@@ -9,7 +9,7 @@ set "OUTPUT_DIR=%ROOT_DIR%Goi_Cai_Dat_ERP"
 set "ZIP_FILE=%ROOT_DIR%HeThong_ERP_Release.zip"
 
 echo [1/3] Bien dich toan bo giai phap o che do Release...
-dotnet msbuild "%ROOT_DIR%ERP.sln" /t:Build /p:Configuration=Release /v:minimal
+dotnet msbuild "%ROOT_DIR%ERP.sln" /t:Build /p:Configuration=Release /p:GenerateResourceMSBuildArchitecture=CurrentArchitecture /p:GenerateResourceMSBuildRuntime=CurrentRuntime /v:minimal
 
 if %ERRORLEVEL% NEQ 0 (
     echo [LOI] Bien dich Release that bai!
@@ -43,6 +43,15 @@ echo    - Ban hang ^(ERP_BanHang^)
 echo    - Quan ly Kho ^(ERPKho1^)
 echo    - Nhan su ^(ERP_NhanSu^)
 echo    - Logistics / Nha cung cap ^(ERP_Logistics^)
+echo    - Ke toan tai chinh ^(KE_TOAN_TAI_CHINH^)
+echo.
+echo 3. Tai khoan dang nhap mau:
+echo    - Quan tri vien ^(tat ca 5 phan he^): admin / admin
+echo    - Ke toan tai chinh: ptha / 123
+echo    - Ban hang: pmduc / 123
+echo    - Kho: lmhoang / 123456
+echo    - Logistics: tllan / 123
+echo    - Nhan su: ntmai / 123
 echo.
 echo * Luu y: Khong xoa cac file .dll va .config di kem trong thu muc.
 echo * Yeu cau: Windows 10 hoac Windows 11.

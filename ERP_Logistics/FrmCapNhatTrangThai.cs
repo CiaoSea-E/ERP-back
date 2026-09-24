@@ -14,6 +14,9 @@ namespace ERP
         public FrmCapNhatTrangThai(string id, string currentStatus)
         {
             InitializeComponent();
+            UIThemeHelper.ApplyFormStyle(this);
+            UIThemeHelper.ApplyActionButton(this.btnLuu, ButtonRole.Primary);
+            UIThemeHelper.ApplyActionButton(this.btnHuy, ButtonRole.Secondary);
             idDonVC = id;
             trangThaiHienTai = currentStatus;
 

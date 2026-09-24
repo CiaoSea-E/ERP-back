@@ -1,4 +1,4 @@
-namespace ERP
+﻿namespace ERP
 {
     partial class QuanLyTraHang
     {
@@ -90,6 +90,7 @@ namespace ERP
             this.btnDangNhap.TabIndex = 8;
             this.btnDangNhap.Text = "Đăng xuất";
             this.btnDangNhap.UseVisualStyleBackColor = true;
+            this.btnDangNhap.Click += new System.EventHandler(this.btnDangNhap_Click);
             // 
             // pnlUserBottom
             // 
@@ -452,13 +453,12 @@ namespace ERP
             // 
             // txtSearch
             // 
-            this.txtSearch.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
             this.txtSearch.Font = new System.Drawing.Font("Segoe UI", 9.5F);
             this.txtSearch.ForeColor = System.Drawing.Color.Gray;
             this.txtSearch.Location = new System.Drawing.Point(0, 75);
             this.txtSearch.Name = "txtSearch";
-            this.txtSearch.Size = new System.Drawing.Size(330, 29);
+            this.txtSearch.Size = new System.Drawing.Size(260, 29);
             this.txtSearch.TabIndex = 3;
             this.txtSearch.Text = "🔍 Tìm kiếm theo Mã phiếu trả, Mã YC, Khách hàng...";
             this.txtSearch.TextChanged += new System.EventHandler(this.txtSearch_TextChanged);
@@ -486,6 +486,7 @@ namespace ERP
             this.Controls.Add(this.pnlSidebar);
             this.Name = "QuanLyTraHang";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Text = "Hệ thống ERP - Phân Hệ Vận Chuyển - Quản Lý Trả Hàng";
             this.Load += new System.EventHandler(this.QuanLyTraHang_Load);
             this.pnlSidebar.ResumeLayout(false);

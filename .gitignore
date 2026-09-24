@@ -36,3 +36,5 @@ x86/
 ## Release packages
 Goi_Cai_Dat_ERP/
 *.zip
+publish/
+

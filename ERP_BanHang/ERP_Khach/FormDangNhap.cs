@@ -184,18 +184,38 @@ namespace ERP_Khach
                                     MessageBox.Show($"Đăng nhập thành công!\nMã NV: {idNV}\nHọ tên: {tenNV}\nChức vụ: {chucVu}\nQuyền: Cho phép truy cập Phân hệ Logistics.",
                                                     "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
+                                    QuanLyTraHang frmLogistics = new QuanLyTraHang();
+                                    frmLogistics.FormClosed += (s, args) => this.Close();
+                                    this.Hide();
+                                    frmLogistics.Show();
+                                }
+                                else
+                                {
+                                    MessageBox.Show($"Tài khoản của nhân viên [{tenNV}] (Chức vụ: {chucVu}) không có quyền truy cập vào Phân hệ Logistics!",
+                                                    "Từ chối truy cập", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                                }
+                            }
+                            else if (_targetPhanHe.IndexOf("tai chinh", StringComparison.OrdinalIgnoreCase) >= 0 || _targetPhanHe.IndexOf("tài chính", StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                if (KiemTraQuyenTaiChinh(chucVu, vaiTro))
+                                {
+                                    MessageBox.Show($"Đăng nhập thành công!\nMã NV: {idNV}\nHọ tên: {tenNV}\nChức vụ: {chucVu}\nQuyền: Cho phép truy cập Phân hệ Kế Toán Tài Chính.",
+                                                    "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                                    KeToanTaiChinh.Infrastructure.Session.SetUser(idNV, $"{tenNV} ({idNV})", string.IsNullOrEmpty(chucVu) ? vaiTro : chucVu);
+
                                     this.Hide();
 
-                                    using (QuanLyNhaCungCap frmLogistics = new QuanLyNhaCungCap())
+                                    using (KeToanTaiChinh.Forms.MainForm frmTaiChinh = new KeToanTaiChinh.Forms.MainForm())
                                     {
-                                        frmLogistics.ShowDialog();
+                                        frmTaiChinh.ShowDialog();
                                     }
 
                                     this.Close();
                                 }
                                 else
                                 {
-                                    MessageBox.Show($"Tài khoản của nhân viên [{tenNV}] (Chức vụ: {chucVu}) không có quyền truy cập vào Phân hệ Logistics!",
+                                    MessageBox.Show($"Tài khoản của nhân viên [{tenNV}] (Chức vụ: {chucVu}) không có quyền truy cập vào Phân hệ Kế Toán Tài Chính!",
                                                     "Từ chối truy cập", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                                 }
                             }
@@ -332,6 +352,24 @@ namespace ERP_Khach
                                       vtLower.Contains("vận chuyển");
 
             return laNhanVienLogistics;
+        }
+
+        private bool KiemTraQuyenTaiChinh(string chucVu, string vaiTro)
+        {
+            string cvLower = (chucVu ?? "").ToLower();
+            string vtLower = (vaiTro ?? "").ToLower();
+
+            if (vtLower.Contains("admin") || vtLower.Contains("quản trị") || cvLower.Contains("admin") || cvLower.Contains("quản trị"))
+            {
+                return true;
+            }
+
+            bool laNhanVienTaiChinh = cvLower.Contains("kế toán") ||
+                                      cvLower.Contains("tài chính") ||
+                                      vtLower.Contains("kế toán") ||
+                                      vtLower.Contains("tài chính");
+
+            return laNhanVienTaiChinh;
         }
 
         private void chkHienThiMatKhau_CheckedChanged(object sender, EventArgs e)

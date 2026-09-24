@@ -35,7 +35,14 @@ namespace HR_Management.GUI
         {
             InitializeComponent();
             LoadUserControls();
-            SwitchView(ucDash, "Tổng quan", btnDash);
+            lblCurrentPageTitle.Text = "Tổng quan";
+            btnActive = btnDash;
+            btnActive.BackColor = Color.FromArgb(153, 27, 27);
+            pnlContent.Controls.Clear();
+            ucDash.Dock = DockStyle.Fill;
+            pnlContent.Controls.Add(ucDash);
+
+            this.Shown += (s, e) => ucDash.LoadData();
         }
 
         private void InitializeComponent()

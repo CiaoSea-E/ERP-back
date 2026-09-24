@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using Npgsql;
@@ -21,6 +21,23 @@ namespace ERP.DAL
             this.connectionString = string.IsNullOrWhiteSpace(connectionString)
                 ? DatabaseConfig.GetConnectionString()
                 : connectionString;
+        }
+
+        public string GetNextID()
+        {
+            // Lấy số thứ tự lớn nhất từ các mã có dạng PTH + số
+            const string query = @"
+                SELECT COALESCE(MAX(CAST(SUBSTRING(id_phieutra FROM 4) AS INTEGER)), 0) + 1
+                FROM phieutrahang
+                WHERE id_phieutra ~ '^PTH[0-9]+$'";
+
+            using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                connection.Open();
+                int nextNum = Convert.ToInt32(command.ExecuteScalar());
+                return "PTH" + nextNum.ToString("D3");
+            }
         }
 
         // 1. Lấy toàn bộ danh sách phiếu trả hàng

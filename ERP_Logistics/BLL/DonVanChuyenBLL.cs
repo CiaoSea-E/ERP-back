@@ -55,6 +55,31 @@ namespace ERP.BLL
             return dal.KiemTraXeDangBan(bienSoXe, excludeIdDonVC, out lyDoBan);
         }
 
+        public List<DonHangChoGiaoItem> LayDanhSachDonHangChoGiao()
+        {
+            return dal.GetDanhSachDonHangChoGiao();
+        }
+
+        public bool KiemTraDonHangDangVanChuyen(string idDH, string excludeIdDonVC, out string lyDo)
+        {
+            return dal.KiemTraDonHangDangVanChuyen(idDH, excludeIdDonVC, out lyDo);
+        }
+
+        public int LaySoLuongDatCuaDonHang(string idDH, string idSP)
+        {
+            return dal.LaySoLuongDatCuaDonHang(idDH, idSP);
+        }
+
+        public List<XeKhaDungItem> LayDanhSachXeKhaDungKemTaiTrong()
+        {
+            return dal.GetDanhSachXeKhaDungKemTaiTrong();
+        }
+
+        public decimal LayTaiTrongXe(string bienSoXe)
+        {
+            return dal.LayTaiTrongXe(bienSoXe);
+        }
+
         public bool ThemDon(DonVanChuyen don)
         {
             if (don == null)
@@ -66,8 +91,35 @@ namespace ERP.BLL
             if (dal.IsExist(don.ID_DonVC))
                 throw new ArgumentException($"Mã đơn vận chuyển '{don.ID_DonVC}' đã tồn tại trong hệ thống.");
 
+            // Kiểm tra trùng Đơn hàng Bán hàng
+            if (!string.IsNullOrWhiteSpace(don.ID_DH))
+            {
+                if (dal.KiemTraDonHangDangVanChuyen(don.ID_DH, null, out string lyDoDH))
+                {
+                    throw new InvalidOperationException(lyDoDH);
+                }
+
+                // Kiểm tra số lượng giao so với số lượng đặt
+                int slDat = dal.LaySoLuongDatCuaDonHang(don.ID_DH, don.ID_SP);
+                if (slDat > 0 && don.SoLuongGiao > slDat)
+                {
+                    throw new ArgumentException($"Số lượng giao ({don.SoLuongGiao}) không được vượt quá số lượng đặt ({slDat}) của đơn hàng [{don.ID_DH}].");
+                }
+            }
+
             if (string.IsNullOrWhiteSpace(don.BienSoXe))
                 throw new ArgumentException("Biển số xe không được để trống.");
+
+            // Kiểm tra tải trọng xe (Chặn quá tải)
+            if (!string.IsNullOrWhiteSpace(don.BienSoXe) && don.TrongLuong > 0)
+            {
+                decimal taiTrongXeKg = dal.LayTaiTrongXe(don.BienSoXe);
+                if (taiTrongXeKg > 0 && don.TrongLuong > taiTrongXeKg)
+                {
+                    decimal vuotTai = don.TrongLuong - taiTrongXeKg;
+                    throw new ArgumentException($"Tổng trọng lượng hàng ({don.TrongLuong:N0} kg) vượt quá tải trọng tối đa của xe [{don.BienSoXe}] ({taiTrongXeKg:N0} kg) là {vuotTai:N0} kg. Vui lòng chọn xe có tải trọng lớn hơn hoặc giảm lượng hàng!");
+                }
+            }
 
             if (string.IsNullOrWhiteSpace(don.MaDVC))
                 throw new ArgumentException("Mã điểm vận chuyển không được để trống.");
@@ -106,8 +158,35 @@ namespace ERP.BLL
             if (!dal.IsExist(don.ID_DonVC))
                 throw new ArgumentException($"Không tìm thấy đơn vận chuyển mã '{don.ID_DonVC}' để cập nhật.");
 
+            // Kiểm tra trùng Đơn hàng Bán hàng
+            if (!string.IsNullOrWhiteSpace(don.ID_DH))
+            {
+                if (dal.KiemTraDonHangDangVanChuyen(don.ID_DH, don.ID_DonVC, out string lyDoDH))
+                {
+                    throw new InvalidOperationException(lyDoDH);
+                }
+
+                // Kiểm tra số lượng giao so với số lượng đặt
+                int slDat = dal.LaySoLuongDatCuaDonHang(don.ID_DH, don.ID_SP);
+                if (slDat > 0 && don.SoLuongGiao > slDat)
+                {
+                    throw new ArgumentException($"Số lượng giao ({don.SoLuongGiao}) không được vượt quá số lượng đặt ({slDat}) của đơn hàng [{don.ID_DH}].");
+                }
+            }
+
             if (string.IsNullOrWhiteSpace(don.BienSoXe))
                 throw new ArgumentException("Biển số xe không được để trống.");
+
+            // Kiểm tra tải trọng xe (Chặn quá tải)
+            if (!string.IsNullOrWhiteSpace(don.BienSoXe) && don.TrongLuong > 0)
+            {
+                decimal taiTrongXeKg = dal.LayTaiTrongXe(don.BienSoXe);
+                if (taiTrongXeKg > 0 && don.TrongLuong > taiTrongXeKg)
+                {
+                    decimal vuotTai = don.TrongLuong - taiTrongXeKg;
+                    throw new ArgumentException($"Tổng trọng lượng hàng ({don.TrongLuong:N0} kg) vượt quá tải trọng tối đa của xe [{don.BienSoXe}] ({taiTrongXeKg:N0} kg) là {vuotTai:N0} kg. Vui lòng chọn xe có tải trọng lớn hơn hoặc giảm lượng hàng!");
+                }
+            }
 
             if (string.IsNullOrWhiteSpace(don.MaDVC))
                 throw new ArgumentException("Mã điểm vận chuyển không được để trống.");

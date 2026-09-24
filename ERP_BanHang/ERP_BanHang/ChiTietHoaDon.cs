@@ -1,4 +1,4 @@
-﻿using iText.IO.Image;
+using iText.IO.Image;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Layout;
@@ -140,7 +140,16 @@ namespace ERP_BanHang
                                 // Tính toán hiển thị tổng số tiền
                                 decimal tongTien = Convert.ToDecimal(reader["TongTien"]);
                                 decimal traTruoc = Convert.ToDecimal(reader["TraTruoc"]);
+                                string trangThaiHD = reader["TrangThaiHD"] != null ? reader["TrangThaiHD"].ToString() : "";
+
+                                // Nếu hóa đơn đã thanh toán mà traTruoc chưa cập nhật đủ thì hiển thị đã thanh toán toàn bộ
+                                if (trangThaiHD == "Đã thanh toán" && traTruoc < tongTien)
+                                {
+                                    traTruoc = tongTien;
+                                }
+
                                 decimal conLai = tongTien - traTruoc;
+                                if (conLai < 0) conLai = 0;
 
                                 if (lblTongTien != null) lblTongTien.Text = tongTien.ToString("N0") + " đ";
                                 if (lblTraTruoc != null) lblTraTruoc.Text = traTruoc.ToString("N0") + " đ";
@@ -185,6 +194,32 @@ namespace ERP_BanHang
                         NpgsqlDataAdapter da = new NpgsqlDataAdapter(cmd);
                         DataTable dtChiTiet = new DataTable();
                         da.Fill(dtChiTiet);
+
+                        // Dự phòng thông minh: nếu ChiTietHoaDon chưa có bản ghi, nạp trực tiếp từ ChiTietDonHang
+                        if (dtChiTiet.Rows.Count == 0)
+                        {
+                            string fallbackQuery = @"
+                                SELECT 
+                                    SP.ID_SP,
+                                    HH.TenHang,
+                                    HH.DonViTinh,
+                                    CTDH.SoLuong,
+                                    CTDH.DonGia,
+                                    CTDH.ThanhTien
+                                FROM ChiTietDonHang CTDH
+                                INNER JOIN SanPham SP ON CTDH.ID_SP = SP.ID_SP
+                                INNER JOIN HangHoa HH ON SP.MaHang = HH.MaHang
+                                WHERE CTDH.ID_DH = @ID_DH";
+
+                            using (NpgsqlCommand fbCmd = new NpgsqlCommand(fallbackQuery, conn))
+                            {
+                                fbCmd.Parameters.AddWithValue("@ID_DH", maDonHangSelected);
+                                using (NpgsqlDataAdapter fbDa = new NpgsqlDataAdapter(fbCmd))
+                                {
+                                    fbDa.Fill(dtChiTiet);
+                                }
+                            }
+                        }
 
                         dgvChiTiet.DataSource = dtChiTiet;
                     }

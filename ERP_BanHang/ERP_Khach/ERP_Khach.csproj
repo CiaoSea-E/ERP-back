@@ -12,6 +12,7 @@
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <NoWin32Manifest>true</NoWin32Manifest>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -103,6 +104,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfirmHoaDon.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConfirmHoaDon.Designer.cs">
+      <DependentUpon>ConfirmHoaDon.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormDangNhap.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -162,6 +169,10 @@
     <ProjectReference Include="..\..\ERP_Logistics\ERP_Logistics.csproj">
       <Project>{D2182BA6-853A-40EF-9E62-779D45DE8074}</Project>
       <Name>ERP_Logistics</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\KE_TOAN_TAI_CHINH\KE_TOAN_TAI_CHINH.csproj">
+      <Project>{F540F8D2-44D8-4A3B-9B30-1B4B233DA281}</Project>
+      <Name>KE_TOAN_TAI_CHINH</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

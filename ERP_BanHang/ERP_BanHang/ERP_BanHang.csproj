@@ -31,6 +31,7 @@
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -221,7 +222,6 @@
       <DependentUpon>ChiTietYeuCauTraHang.cs</DependentUpon>
     </Compile>
     <Compile Include="DataConnect.cs" />
-    <Compile Include="DieuHuongBanHang.cs" />
     <Compile Include="QlyGiaoHang.cs">
       <SubType>Form</SubType>
     </Compile>
