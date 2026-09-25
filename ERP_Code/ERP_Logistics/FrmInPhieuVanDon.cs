@@ -46,7 +46,7 @@ namespace ERP
 
             // Phương tiện & Tuyến đường
             lblValBienSo.Text = !string.IsNullOrWhiteSpace(don.BienSoXe) ? don.BienSoXe : "Chưa gán xe";
-            lblValDiemVC.Text = !string.IsNullOrWhiteSpace(don.MaDVC) ? don.MaDVC : "Chưa xác định";
+            lblValDiemVC.Text = !string.IsNullOrWhiteSpace(don.TenDVC) ? don.TenDVC : (!string.IsNullOrWhiteSpace(don.MaDVC) ? don.MaDVC : "Chưa xác định");
             lblValTrangThai.Text = !string.IsNullOrWhiteSpace(don.TrangThaiDon) ? don.TrangThaiDon : "Khởi tạo";
 
             // Màu trạng thái
@@ -66,9 +66,7 @@ namespace ERP
             // Chi tiết hàng hóa
             dgvHangHoa.Rows.Clear();
             string tenSP = !string.IsNullOrWhiteSpace(don.TenHang) ? don.TenHang : don.ID_SP;
-            string strTrongLuong = don.TrongLuong > 0 ? $"{don.TrongLuong:N0} kg" : "Theo quy cách";
-
-            dgvHangHoa.Rows.Add("1", don.ID_SP, tenSP, $"{don.SoLuongGiao:N0} kiện", strTrongLuong);
+            dgvHangHoa.Rows.Add("1", don.ID_SP, tenSP, $"{don.SoLuongGiao:N0} kiện");
         }
 
         private void btnPrint_Click(object sender, EventArgs e)

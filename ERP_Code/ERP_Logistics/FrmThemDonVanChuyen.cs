@@ -32,14 +32,18 @@ namespace ERP
         {
             try
             {
-                // 1. Nạp danh sách điểm vận chuyển
-                List<string> dsDVC = bll.LayDanhSachDVC();
+                // 1. Nạp danh sách điểm vận chuyển (hiển thị Tên điểm thay vì Mã)
+                List<DiemVanChuyenComboItem> dsDVC = bll.LayDanhSachDiemVanChuyenCombo();
                 cboMaDVC.Items.Clear();
-                foreach (string dvc in dsDVC)
+                foreach (DiemVanChuyenComboItem dvc in dsDVC)
                 {
                     cboMaDVC.Items.Add(dvc);
                 }
-                if (cboMaDVC.Items.Count > 0) cboMaDVC.SelectedIndex = 0;
+                if (cboMaDVC.Items.Count > 0)
+                {
+                    cboMaDVC.SelectedIndex = 0;
+                    CapNhatHienThiDiaChiDVC();
+                }
 
                 // 2. Nạp danh sách xe khả dụng kèm tải trọng
                 List<XeKhaDungItem> dsXe = bll.LayDanhSachXeKhaDungKemTaiTrong();
@@ -79,12 +83,30 @@ namespace ERP
             }
         }
 
+        private void CapNhatHienThiDiaChiDVC()
+        {
+            if (cboMaDVC.SelectedItem is DiemVanChuyenComboItem diem)
+            {
+                txtDiaChiGiao.Text = !string.IsNullOrWhiteSpace(diem.DiaChiDVC)
+                    ? diem.DiaChiDVC
+                    : string.Empty;
+            }
+            else
+            {
+                txtDiaChiGiao.Text = string.Empty;
+            }
+        }
+
+        private void cboMaDVC_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CapNhatHienThiDiaChiDVC();
+        }
+
         private void CapNhatHienThiTaiTrongXe()
         {
             if (cboBienSoXe.SelectedItem is XeKhaDungItem xe)
             {
                 lblTaiTrongXe.Text = $"🚛 Tải trọng tối đa: {xe.TaiTrongKg:N0} kg ({xe.LoaiXe})";
-                KiemTraQuaTaiThoiGianThuc();
             }
             else
             {
@@ -99,70 +121,35 @@ namespace ERP
 
         private void txtSoLuongGiao_TextChanged(object sender, EventArgs e)
         {
-            // Tự động gợi ý trọng lượng = Số lượng * 10kg nếu người dùng chưa nhập tay số khác
-            if (int.TryParse(txtSoLuongGiao.Text.Trim(), out int sl) && sl > 0)
-            {
-                if (string.IsNullOrWhiteSpace(txtTrongLuong.Text) || txtTrongLuong.Tag?.ToString() == "auto")
-                {
-                    txtTrongLuong.Text = (sl * 10).ToString();
-                    txtTrongLuong.Tag = "auto";
-                }
-            }
-            KiemTraQuaTaiThoiGianThuc();
-        }
-
-        private void txtTrongLuong_TextChanged(object sender, EventArgs e)
-        {
-            if (txtTrongLuong.Focused)
-            {
-                txtTrongLuong.Tag = "manual";
-            }
-            KiemTraQuaTaiThoiGianThuc();
-        }
-
-        private void KiemTraQuaTaiThoiGianThuc()
-        {
-            if (cboBienSoXe.SelectedItem is XeKhaDungItem xe)
-            {
-                if (decimal.TryParse(txtTrongLuong.Text.Trim(), out decimal tl) && tl > 0)
-                {
-                    if (tl > xe.TaiTrongKg)
-                    {
-                        decimal vuot = tl - xe.TaiTrongKg;
-                        lblTaiTrongXe.ForeColor = Color.Red;
-                        lblTaiTrongXe.Text = $"⚠️ QUÁ TẢI: {tl:N0} kg / {xe.TaiTrongKg:N0} kg (Vượt {vuot:N0} kg)!";
-                        txtTrongLuong.ForeColor = Color.Red;
-                    }
-                    else
-                    {
-                        lblTaiTrongXe.ForeColor = Color.FromArgb(40, 167, 69);
-                        lblTaiTrongXe.Text = $"✅ Tải trọng hợp lệ: {tl:N0} kg / {xe.TaiTrongKg:N0} kg ({xe.LoaiXe})";
-                        txtTrongLuong.ForeColor = Color.Black;
-                    }
-                }
-                else
-                {
-                    lblTaiTrongXe.ForeColor = Color.FromArgb(40, 167, 69);
-                    lblTaiTrongXe.Text = $"🚛 Tải trọng tối đa: {xe.TaiTrongKg:N0} kg ({xe.LoaiXe})";
-                    txtTrongLuong.ForeColor = Color.Black;
-                }
-            }
         }
 
         private void cboDonHang_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (cboDonHang.SelectedItem is DonHangChoGiaoItem selectedDH && !string.IsNullOrWhiteSpace(selectedDH.ID_DH))
             {
-                // Tự động gợi ý mã chuyến nếu trống hoặc đang dùng tiền tố gợi ý
-                if (string.IsNullOrWhiteSpace(txtIDDonVC.Text) || txtIDDonVC.Text.StartsWith("VC_"))
+                // Tự động gợi ý mã chuyến duy nhất, tránh trùng lặp nếu đơn cũ đã từng bị hủy
+                string baseMa = "VC_" + selectedDH.ID_DH.Trim();
+                string candidateMa = baseMa;
+                int suffix = 1;
+                while (bll.KiemTraTonTai(candidateMa))
                 {
-                    txtIDDonVC.Text = "VC_" + selectedDH.ID_DH;
+                    candidateMa = $"{baseMa}_{suffix}";
+                    if (candidateMa.Length > 20)
+                    {
+                        candidateMa = $"V{suffix}_{selectedDH.ID_DH.Trim()}";
+                        if (candidateMa.Length > 20) candidateMa = candidateMa.Substring(0, 20);
+                    }
+                    suffix++;
                 }
+                txtIDDonVC.Text = candidateMa;
 
-                // Tự động điền số lượng đặt
+                // Tự động điền địa chỉ giao hàng và khóa
+                txtDiaChiGiao.Text = !string.IsNullOrWhiteSpace(selectedDH.DiaChiGiao) ? selectedDH.DiaChiGiao : string.Empty;
+
+                // Tự động điền số lượng đặt từ đơn bán hàng (ô số lượng đã bị khóa)
                 txtSoLuongGiao.Text = selectedDH.SoLuongDat.ToString();
 
-                // Tự động chọn sản phẩm tương ứng trong cboSanPham
+                // Tự động chọn sản phẩm tương ứng trong cboSanPham (đã khóa không cho sửa)
                 if (!string.IsNullOrEmpty(selectedDH.ID_SP))
                 {
                     for (int i = 0; i < cboSanPham.Items.Count; i++)
@@ -174,17 +161,65 @@ namespace ERP
                         }
                     }
                 }
+
+                // TỰ ĐỘNG THÊM / CHỌN ĐIỂM NHẬN HÀNG LÀ ĐỊA CHỈ KHÁCH HÀNG TỪ ĐƠN BÁN HÀNG
+                try
+                {
+                    DiemVanChuyenComboItem diemKhach = bll.LayHoacTaoDiemNhanHangChoKhachHang(
+                        selectedDH.TenKhachHang,
+                        selectedDH.DiaChiGiao,
+                        selectedDH.SDT
+                    );
+
+                    if (diemKhach != null)
+                    {
+                        int existingIndex = -1;
+                        for (int i = 0; i < cboMaDVC.Items.Count; i++)
+                        {
+                            if (cboMaDVC.Items[i] is DiemVanChuyenComboItem it && it.MaDVC == diemKhach.MaDVC)
+                            {
+                                existingIndex = i;
+                                break;
+                            }
+                        }
+
+                        if (existingIndex >= 0)
+                        {
+                            cboMaDVC.SelectedIndex = existingIndex;
+                        }
+                        else
+                        {
+                            cboMaDVC.Items.Add(diemKhach);
+                            cboMaDVC.SelectedItem = diemKhach;
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(diemKhach.DiaChiDVC))
+                        {
+                            txtDiaChiGiao.Text = diemKhach.DiaChiDVC;
+                        }
+                    }
+                }
+                catch
+                {
+                    // Bỏ qua ngoại lệ nếu có lỗi kết nối tạm thời
+                }
+            }
+            else
+            {
+                txtDiaChiGiao.Text = string.Empty;
+                txtSoLuongGiao.Text = string.Empty;
+                cboSanPham.SelectedIndex = -1;
+                CapNhatHienThiDiaChiDVC();
             }
         }
 
         private void btnLuu_Click(object sender, EventArgs e)
         {
             string maDon = txtIDDonVC.Text.Trim();
-            string maDVC = cboMaDVC.SelectedItem?.ToString();
+            string maDVC = (cboMaDVC.SelectedItem as DiemVanChuyenComboItem)?.MaDVC ?? cboMaDVC.SelectedItem?.ToString();
             string bienSo = (cboBienSoXe.SelectedItem as XeKhaDungItem)?.BienSoXe ?? cboBienSoXe.SelectedItem?.ToString();
             string sanPham = (cboSanPham.SelectedItem as SanPhamComboItem)?.ID_SP ?? cboSanPham.SelectedItem?.ToString();
             string strSoLuong = txtSoLuongGiao.Text.Trim();
-            string strTrongLuong = txtTrongLuong.Text.Trim();
             DateTime thoiGianGiao = dtpThoiGianKhoiHanh.Value;
 
             // ==========================================================
@@ -212,6 +247,13 @@ namespace ERP
                 return;
             }
 
+            if (string.IsNullOrWhiteSpace(txtDiaChiGiao.Text.Trim()))
+            {
+                MessageBox.Show("Địa chỉ giao hàng không được để trống! Vui lòng chọn Đơn hàng hoặc Điểm giao nhận có địa chỉ.", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                cboDonHang.Focus();
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(bienSo))
             {
                 MessageBox.Show("Vui lòng chọn Phương tiện / Đơn vị vận chuyển!", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -219,41 +261,28 @@ namespace ERP
                 return;
             }
 
+            if (bll.KiemTraXeDangBan(bienSo, maDon, out string lyDoXe))
+            {
+                MessageBox.Show($"Phương tiện [{bienSo}] hiện không khả dụng!\n\nLý do: {lyDoXe}.\n\nVui lòng chọn phương tiện khác đang rảnh.", "Cảnh báo phương tiện bận", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                cboBienSoXe.Focus();
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(sanPham))
             {
-                MessageBox.Show("Vui lòng chọn Hàng hóa / Sản phẩm!", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                cboSanPham.Focus();
+                MessageBox.Show("Vui lòng chọn Đơn hàng Bán hàng để lấy thông tin Hàng hóa!", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                cboDonHang.Focus();
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(strSoLuong) || !int.TryParse(strSoLuong, out int soLuong) || soLuong <= 0)
             {
-                MessageBox.Show("Số lượng giao phải là số nguyên dương lớn hơn 0!", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtSoLuongGiao.Focus();
-                txtSoLuongGiao.SelectAll();
+                MessageBox.Show("Vui lòng chọn Đơn hàng Bán hàng có số lượng giao hợp lệ (> 0)!", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                cboDonHang.Focus();
                 return;
             }
 
-            decimal trongLuong = 0;
-            if (!string.IsNullOrWhiteSpace(strTrongLuong) && (!decimal.TryParse(strTrongLuong, out trongLuong) || trongLuong < 0))
-            {
-                MessageBox.Show("Trọng lượng hàng phải là số hợp lệ (kg)!", "Lỗi nhập liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtTrongLuong.Focus();
-                txtTrongLuong.SelectAll();
-                return;
-            }
 
-            // ==========================================================
-            // KIỂM TRA QUÁ TẢI TRỌNG PHƯƠNG TIỆN
-            // ==========================================================
-            if (cboBienSoXe.SelectedItem is XeKhaDungItem xeItem && trongLuong > 0 && trongLuong > xeItem.TaiTrongKg)
-            {
-                decimal vuot = trongLuong - xeItem.TaiTrongKg;
-                MessageBox.Show($"Phương tiện [{xeItem.BienSoXe}] có tải trọng tối đa {xeItem.TaiTrongKg:N0} kg.\nTổng trọng lượng hàng là {trongLuong:N0} kg (Vượt quá tải trọng {vuot:N0} kg)!\n\nVui lòng chọn phương tiện có tải trọng lớn hơn hoặc giảm lượng hàng hóa!", "Cảnh báo quá tải trọng", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                txtTrongLuong.Focus();
-                txtTrongLuong.SelectAll();
-                return;
-            }
 
             // ==========================================================
             // LUỒNG NGOẠI LỆ A3: Sai định dạng thời gian
@@ -300,7 +329,7 @@ namespace ERP
                     BienSoXe = bienSo,
                     ID_SP = sanPham,
                     SoLuongGiao = soLuong,
-                    TrongLuong = trongLuong,
+                    TrongLuong = 0,
                     ThoiGianKhoiHanh = thoiGianGiao,
                     TrangThaiDon = "Khởi tạo"
                 };

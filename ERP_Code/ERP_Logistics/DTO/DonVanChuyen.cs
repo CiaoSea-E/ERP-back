@@ -10,6 +10,7 @@ namespace ERP.DTO
         public string ID_DH { get; set; }
         public string BienSoXe { get; set; }
         public string MaDVC { get; set; }
+        public string TenDVC { get; set; }
         public string ID_SP { get; set; }
         public string TenHang { get; set; }
         public string TenKhachHang { get; set; }
@@ -106,6 +107,31 @@ namespace ERP.DTO
                 if (string.IsNullOrWhiteSpace(TenHang))
                     return ID_SP;
                 return $"{ID_SP} - {TenHang}";
+            }
+        }
+
+        public override string ToString()
+        {
+            return DisplayText;
+        }
+    }
+
+    public class DiemVanChuyenComboItem
+    {
+        public string MaDVC { get; set; }
+        public string TenDVC { get; set; }
+        public string DiaChiDVC { get; set; }
+        public string SDT { get; set; }
+
+        public string DisplayText
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(TenDVC))
+                {
+                    return TenDVC;
+                }
+                return MaDVC;
             }
         }
 

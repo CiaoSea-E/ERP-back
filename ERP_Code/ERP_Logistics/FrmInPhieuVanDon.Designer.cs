@@ -43,7 +43,6 @@ namespace ERP
             this.colMaSP = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colTenHang = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colSoLuong = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colTrongLuong = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.pnlKyTen = new System.Windows.Forms.Panel();
             this.lblKyNguoiLap = new System.Windows.Forms.Label();
             this.lblSubNguoiLap = new System.Windows.Forms.Label();
@@ -333,8 +332,7 @@ namespace ERP
             this.colSTT,
             this.colMaSP,
             this.colTenHang,
-            this.colSoLuong,
-            this.colTrongLuong});
+            this.colSoLuong});
             this.dgvHangHoa.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvHangHoa.Location = new System.Drawing.Point(3, 23);
             this.dgvHangHoa.Name = "dgvHangHoa";
@@ -375,15 +373,7 @@ namespace ERP
             this.colSoLuong.MinimumWidth = 6;
             this.colSoLuong.Name = "colSoLuong";
             this.colSoLuong.ReadOnly = true;
-            this.colSoLuong.Width = 100;
-            // 
-            // colTrongLuong
-            // 
-            this.colTrongLuong.HeaderText = "TRỌNG LƯỢNG";
-            this.colTrongLuong.MinimumWidth = 6;
-            this.colTrongLuong.Name = "colTrongLuong";
-            this.colTrongLuong.ReadOnly = true;
-            this.colTrongLuong.Width = 130;
+            this.colSoLuong.Width = 140;
             // 
             // pnlKyTen
             // 
@@ -552,7 +542,6 @@ namespace ERP
         private System.Windows.Forms.DataGridViewTextBoxColumn colMaSP;
         private System.Windows.Forms.DataGridViewTextBoxColumn colTenHang;
         private System.Windows.Forms.DataGridViewTextBoxColumn colSoLuong;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colTrongLuong;
         private System.Windows.Forms.Panel pnlKyTen;
         private System.Windows.Forms.Label lblKyNguoiLap;
         private System.Windows.Forms.Label lblSubNguoiLap;

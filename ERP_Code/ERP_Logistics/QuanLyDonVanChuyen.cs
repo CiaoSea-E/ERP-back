@@ -8,7 +8,7 @@ using ERP.DTO;
 
 namespace ERP
 {
-    public partial class QuanLyDonVanChuyen : Form
+    public partial class QuanLyDonVanChuyen : Form, IRefreshableForm
     {
         private readonly DonVanChuyenBLL bll = new DonVanChuyenBLL();
         public Button btnExport;
@@ -21,6 +21,15 @@ namespace ERP
 
         private FlowLayoutPanel pnlKpiContainer;
         private Label lblKpiTotalVal, lblKpiShippingVal, lblKpiDoneVal, lblKpiReadyVehiclesVal;
+
+        public void LamMoiDuLieu()
+        {
+            try
+            {
+                LoadDataDonVanChuyen();
+            }
+            catch { }
+        }
 
         private void QuanLyDonVanChuyen_Load(object sender, EventArgs e)
         {
@@ -45,10 +54,19 @@ namespace ERP
                     txtSearch.Text = "🔍 Tìm kiếm theo Mã đơn, Mã xe, Địa điểm...";
                     txtSearch.ForeColor = Color.Gray;
                     if (cmbTrangThai.Items.Count > 0) cmbTrangThai.SelectedIndex = 0;
-                    LocDuLieu();
+                    LamMoiDuLieu();
                 },
                 new FilterItem("Trạng thái:", this.cmbTrangThai, 200)
             );
+
+            // Tự động làm mới dữ liệu khi form hiển thị lại từ Hide()
+            this.VisibleChanged += (s, ev) =>
+            {
+                if (this.Visible && !this.IsDisposed)
+                {
+                    LamMoiDuLieu();
+                }
+            };
 
             InitExportButton();
             InitKpiPanel();
@@ -215,14 +233,14 @@ namespace ERP
             colXe.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvData.Columns.Add(colXe);
 
-            // 3. Mã Điểm Vận Chuyển (MaDVC)
+            // 3. Điểm Vận Chuyển (TenDVC)
             DataGridViewTextBoxColumn colMaDVC = new DataGridViewTextBoxColumn();
             colMaDVC.Name = "colMaDVC";
-            colMaDVC.HeaderText = "MÃ ĐIỂM VC";
-            colMaDVC.DataPropertyName = "MaDVC";
-            colMaDVC.FillWeight = 16;
-            colMaDVC.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            colMaDVC.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            colMaDVC.HeaderText = "ĐIỂM GIAO NHẬN";
+            colMaDVC.DataPropertyName = "TenDVC";
+            colMaDVC.FillWeight = 18;
+            colMaDVC.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            colMaDVC.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dgvData.Columns.Add(colMaDVC);
 
             // 4. Mã Sản Phẩm (ID_SP)
@@ -250,28 +268,17 @@ namespace ERP
             colSL.Name = "colSoLuongGiao";
             colSL.HeaderText = "SL GIAO";
             colSL.DataPropertyName = "SoLuongGiao";
-            colSL.FillWeight = 10;
+            colSL.FillWeight = 12;
             colSL.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             colSL.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvData.Columns.Add(colSL);
-
-            // 5.1 Trọng lượng (TrongLuong)
-            DataGridViewTextBoxColumn colTL = new DataGridViewTextBoxColumn();
-            colTL.Name = "colTrongLuong";
-            colTL.HeaderText = "TRỌNG LƯỢNG (KG)";
-            colTL.DataPropertyName = "TrongLuong";
-            colTL.FillWeight = 12;
-            colTL.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-            colTL.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleRight;
-            colTL.DefaultCellStyle.Format = "#,##0 kg";
-            dgvData.Columns.Add(colTL);
 
             // 6. Thời Gian Khởi Hành (ThoiGianKhoiHanh)
             DataGridViewTextBoxColumn colNgay = new DataGridViewTextBoxColumn();
             colNgay.Name = "colThoiGianKhoiHanh";
             colNgay.HeaderText = "THỜI GIAN KHỞI HÀNH";
             colNgay.DataPropertyName = "ThoiGianKhoiHanh";
-            colNgay.FillWeight = 18;
+            colNgay.FillWeight = 20;
             colNgay.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             colNgay.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleCenter;
             colNgay.DefaultCellStyle.Format = "dd/MM/yyyy HH:mm";
@@ -303,6 +310,12 @@ namespace ERP
         {
             try
             {
+                try
+                {
+                    bll.DongBoLienKetBanHangVaLogistics();
+                }
+                catch { }
+
                 List<DonVanChuyen> list = bll.LayDanhSach();
                 BindData(list);
             }
@@ -427,8 +440,22 @@ namespace ERP
             if (dgvData.CurrentRow != null)
             {
                 string id = dgvData.CurrentRow.Cells["colID_DonVC"].Value?.ToString();
+                string status = dgvData.CurrentRow.Cells["colTrangThaiDon"].Value?.ToString();
+
                 if (!string.IsNullOrEmpty(id))
                 {
+                    if (status == "Hoàn thành")
+                    {
+                        MessageBox.Show("Không thể xóa đơn vận chuyển đã HOÀN THÀNH để đảm bảo tính toàn vẹn dữ liệu và lịch sử đối soát nghiệp vụ!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    if (status == "Đang vận chuyển")
+                    {
+                        MessageBox.Show("Không thể xóa đơn vận chuyển ĐANG VẬN CHUYỂN! Phương tiện đang thực hiện hành trình trên đường.", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
                     DialogResult dr = MessageBox.Show($"Bạn có chắc chắn muốn xóa đơn vận chuyển '{id}' không?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                     if (dr == DialogResult.Yes)
                     {
@@ -457,6 +484,18 @@ namespace ERP
             {
                 string id = dgvData.CurrentRow.Cells["colID_DonVC"].Value?.ToString();
                 string statusHienTai = dgvData.CurrentRow.Cells["colTrangThaiDon"].Value?.ToString();
+
+                if (statusHienTai == "Hoàn thành")
+                {
+                    MessageBox.Show("Đơn vận chuyển này đã HOÀN THÀNH nên không thể thay đổi trạng thái!\n\nNếu khách hàng muốn đổi trả hàng, vui lòng sử dụng chức năng 'Quản lý trả hàng' để lập phiếu thu hồi.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                if (statusHienTai == "Đã hủy")
+                {
+                    MessageBox.Show("Đơn vận chuyển này đã ĐÃ HỦY nên không thể thay đổi trạng thái!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
 
                 if (!string.IsNullOrEmpty(id))
                 {

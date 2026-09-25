@@ -40,6 +40,16 @@ namespace ERP.BLL
             return dal.GetDanhSachDVC();
         }
 
+        public List<DiemVanChuyenComboItem> LayDanhSachDiemVanChuyenCombo()
+        {
+            return dal.GetDanhSachDiemVanChuyen();
+        }
+
+        public DiemVanChuyenComboItem LayHoacTaoDiemNhanHangChoKhachHang(string tenKhachHang, string diaChiGiao, string sdt)
+        {
+            return dal.LayHoacTaoDiemNhanHangChoKhachHang(tenKhachHang, diaChiGiao, sdt);
+        }
+
         public List<string> LayDanhSachSanPham()
         {
             return dal.GetDanhSachSanPham();
@@ -78,6 +88,11 @@ namespace ERP.BLL
         public decimal LayTaiTrongXe(string bienSoXe)
         {
             return dal.LayTaiTrongXe(bienSoXe);
+        }
+
+        public XeKhaDungItem LayThongTinXe(string bienSoXe)
+        {
+            return dal.GetThongTinXe(bienSoXe);
         }
 
         public bool ThemDon(DonVanChuyen don)
@@ -197,6 +212,31 @@ namespace ERP.BLL
             if (don.SoLuongGiao <= 0)
                 throw new ArgumentException("Số lượng giao phải lớn hơn 0.");
 
+            // Kiểm tra ràng buộc vòng đời trạng thái (State Machine)
+            DonVanChuyen donCu = dal.GetByID(don.ID_DonVC);
+            if (donCu != null)
+            {
+                if (donCu.TrangThaiDon == "Hoàn thành" && don.TrangThaiDon != "Hoàn thành")
+                {
+                    throw new InvalidOperationException("Đơn vận chuyển đã HOÀN THÀNH nên không thể thay đổi trạng thái!");
+                }
+
+                if (donCu.TrangThaiDon == "Đã hủy" && don.TrangThaiDon != "Đã hủy")
+                {
+                    throw new InvalidOperationException("Đơn vận chuyển đã ĐÃ HỦY nên không thể thay đổi trạng thái!");
+                }
+
+                if (donCu.TrangThaiDon == "Khởi tạo" && don.TrangThaiDon == "Hoàn thành")
+                {
+                    throw new InvalidOperationException("Đơn vận chuyển đang 'Khởi tạo' chưa thể chuyển trực tiếp sang 'Hoàn thành' mà phải chuyển sang 'Đang vận chuyển' trước!");
+                }
+
+                if (donCu.TrangThaiDon == "Đang vận chuyển" && don.TrangThaiDon == "Khởi tạo")
+                {
+                    throw new InvalidOperationException("Đơn vận chuyển đang 'Đang vận chuyển' không thể quay lại trạng thái 'Khởi tạo'!");
+                }
+            }
+
             if (don.TrangThaiDon == "Đang vận chuyển")
             {
                 if (dal.KiemTraXeDangBan(don.BienSoXe, don.ID_DonVC, out string lyDo))
@@ -219,6 +259,20 @@ namespace ERP.BLL
             if (!dal.IsExist(id))
                 throw new ArgumentException($"Không tìm thấy đơn vận chuyển mã '{id}' để xóa.");
 
+            DonVanChuyen don = dal.GetByID(id);
+            if (don != null)
+            {
+                if (don.TrangThaiDon == "Hoàn thành")
+                {
+                    throw new InvalidOperationException("Không thể xóa đơn vận chuyển đã 'Hoàn thành' để đảm bảo tính toàn vẹn dữ liệu đối soát!");
+                }
+
+                if (don.TrangThaiDon == "Đang vận chuyển")
+                {
+                    throw new InvalidOperationException("Không thể xóa đơn vận chuyển đang 'Đang vận chuyển' khi phương tiện đang làm nhiệm vụ!");
+                }
+            }
+
             bool success = dal.Delete(id);
             if (!success)
                 throw new Exception("Xóa đơn vận chuyển thất bại. Vui lòng thử lại!");
@@ -233,6 +287,21 @@ namespace ERP.BLL
         public DataTable GetTatCaDonVanChuyen()
         {
             return dal.GetTatCaDonVanChuyen();
+        }
+
+        public bool KiemTraTonTai(string id)
+        {
+            return dal.IsExist(id);
+        }
+
+        public void DongBoTrangThaiXeToanHeThong()
+        {
+            dal.DongBoTrangThaiXeToanHeThong();
+        }
+
+        public void DongBoLienKetBanHangVaLogistics()
+        {
+            dal.DongBoLienKetBanHangVaLogistics();
         }
     }
 }

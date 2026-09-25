@@ -1,6 +1,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Tu dong khoi phuc NuGet packages truoc khi bien dich neu thu vien chua co tren may -->
-  <Target Name="AutoRestorePackages" BeforeTargets="PrepareForBuild" Condition="!Exists('$(MSBuildThisFileDirectory)ERP_BanHang\packages\Npgsql.4.1.12')">
+  <Target Name="AutoRestorePackages" BeforeTargets="PrepareForBuild" Condition="!Exists('$(MSBuildThisFileDirectory)ERP_BanHang\packages\Npgsql.4.1.12') or !Exists('$(MSBuildThisFileDirectory)ERP_BanHang\packages\System.Resources.Extensions.4.6.0')">
     <Message Importance="high" Text="[ERP Auto-Restore] Dang tu dong khoi phuc thu vien NuGet cho lan chay dau tien..." />
     <Exec Command="&quot;$(MSBuildThisFileDirectory)nuget.exe&quot; restore &quot;$(MSBuildThisFileDirectory)ERP.sln&quot;" />
   </Target>

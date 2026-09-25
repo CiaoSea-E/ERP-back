@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -7,7 +7,7 @@ using ERP.DTO;
 
 namespace ERP
 {
-    public partial class QuanLyTraHang : Form
+    public partial class QuanLyTraHang : Form, IRefreshableForm
     {
         private readonly PhieuTraHangBLL bll = new PhieuTraHangBLL();
 
@@ -18,6 +18,15 @@ namespace ERP
 
         private FlowLayoutPanel pnlKpiContainer;
         private Label lblKpiTotalVal, lblKpiPendingVal, lblKpiDoneVal, lblKpiCanceledVal;
+
+        public void LamMoiDuLieu()
+        {
+            try
+            {
+                LoadDataPhieuTraHang();
+            }
+            catch { }
+        }
 
         private void QuanLyTraHang_Load(object sender, EventArgs e)
         {
@@ -30,6 +39,7 @@ namespace ERP
             UIThemeHelper.ApplyActionButton(this.btnAdd, ButtonRole.Primary);
             UIThemeHelper.ApplyActionButton(this.btnEdit, ButtonRole.Secondary);
             UIThemeHelper.ApplyActionButton(this.btnDelete, ButtonRole.Danger);
+            UIThemeHelper.ApplyActionButton(this.btnUpdateStatus, ButtonRole.Edit);
 
             // Thiết lập Filter Bar dạng Card hiện đại chuẩn UI/UX Pro Max (tránh đè chồng, nhãn rõ ràng)
             UIThemeHelper.SetupModernFilterCard(
@@ -37,17 +47,26 @@ namespace ERP
                 this.txtSearch,
                 260,
                 () => {
-                    txtSearch.Text = "🔍 Tìm kiếm theo Mã phiếu trả, Tên ĐVC...";
+                    txtSearch.Text = "🔍 Tìm kiếm theo Mã phiếu, Biển số xe, Mã CTYC, Tên ĐVC...";
                     txtSearch.ForeColor = Color.Gray;
                     dtpTuNgay.Checked = false;
                     dtpDenNgay.Checked = false;
                     if (cmbTrangThai.Items.Count > 0) cmbTrangThai.SelectedIndex = 0;
-                    TimKiem();
+                    LamMoiDuLieu();
                 },
                 new FilterItem("Từ ngày:", this.dtpTuNgay, 120),
                 new FilterItem("Đến:", this.dtpDenNgay, 120),
                 new FilterItem("Trạng thái:", this.cmbTrangThai, 180)
             );
+
+            // Tự động làm mới dữ liệu khi form hiển thị lại từ Hide()
+            this.VisibleChanged += (s, ev) =>
+            {
+                if (this.Visible && !this.IsDisposed)
+                {
+                    LamMoiDuLieu();
+                }
+            };
 
             InitKpiPanel();
             KhoiTaoCotBang();
@@ -78,10 +97,10 @@ namespace ERP
             var card2 = UIThemeHelper.CreateKpiCard("CHỜ XỬ LÝ", "0", "Cần kiểm tra/nhập kho", Color.FromArgb(217, 119, 6));
             lblKpiPendingVal = card2.Controls[1].Controls[0] as Label;
 
-            var card3 = UIThemeHelper.CreateKpiCard("ĐÃ NHẬP KHO", "0", "Hoàn tất kiểm định", Color.FromArgb(22, 163, 74));
+            var card3 = UIThemeHelper.CreateKpiCard("ĐÃ XỬ LÝ / NHẬP KHO", "0", "Hoàn tất kiểm định", Color.FromArgb(22, 163, 74));
             lblKpiDoneVal = card3.Controls[1].Controls[0] as Label;
 
-            var card4 = UIThemeHelper.CreateKpiCard("ĐÃ TỪ CHỐI / HỦY", "0", "Không hợp lệ", Color.FromArgb(220, 38, 38));
+            var card4 = UIThemeHelper.CreateKpiCard("TỪ CHỐI / HỦY", "0", "Không hợp lệ", Color.FromArgb(220, 38, 38));
             lblKpiCanceledVal = card4.Controls[1].Controls[0] as Label;
 
             pnlKpiContainer.Controls.Add(card1);
@@ -111,7 +130,7 @@ namespace ERP
                         string tt = p.TrangThai ?? "";
                         if (tt.IndexOf("chờ", StringComparison.OrdinalIgnoreCase) >= 0 || tt.IndexOf("mới", StringComparison.OrdinalIgnoreCase) >= 0)
                             pending++;
-                        else if (tt.IndexOf("nhập kho", StringComparison.OrdinalIgnoreCase) >= 0 || tt.IndexOf("hoàn thành", StringComparison.OrdinalIgnoreCase) >= 0 || tt.IndexOf("duyệt", StringComparison.OrdinalIgnoreCase) >= 0)
+                        else if (tt.IndexOf("nhập kho", StringComparison.OrdinalIgnoreCase) >= 0 || (tt.IndexOf("xử lý", StringComparison.OrdinalIgnoreCase) >= 0 && tt.IndexOf("chờ", StringComparison.OrdinalIgnoreCase) < 0) || tt.IndexOf("hoàn thành", StringComparison.OrdinalIgnoreCase) >= 0 || tt.IndexOf("duyệt", StringComparison.OrdinalIgnoreCase) >= 0)
                             done++;
                         else if (tt.IndexOf("từ chối", StringComparison.OrdinalIgnoreCase) >= 0 || tt.IndexOf("hủy", StringComparison.OrdinalIgnoreCase) >= 0)
                             canceled++;
@@ -204,7 +223,7 @@ namespace ERP
             try
             {
                 // Đổ data vào ComboBox bộ lọc trạng thái
-                string[] dsTrangThai = { "Chờ xử lý", "Đang thu hồi", "Đã nhập kho", "Đã hủy" };
+                string[] dsTrangThai = { "Chờ xử lý", "Đang thu hồi", "Đã xử lý", "Đã hủy" };
                 cmbTrangThai.Items.Clear();
                 cmbTrangThai.Items.Add("Tất cả trạng thái");
                 cmbTrangThai.Items.AddRange(dsTrangThai);
@@ -251,11 +270,11 @@ namespace ERP
                     {
                         row.Cells["colTrangThai"].Style.ForeColor = Color.FromArgb(13, 110, 253); // Xanh dương
                     }
-                    else if (tt == "Đã nhập kho")
+                    else if (tt == "Đã xử lý" || tt == "Đã nhập kho")
                     {
                         row.Cells["colTrangThai"].Style.ForeColor = Color.FromArgb(40, 167, 69); // Xanh lá
                     }
-                    else if (tt == "Đã hủy")
+                    else if (tt == "Đã hủy" || tt == "Từ chối")
                     {
                         row.Cells["colTrangThai"].Style.ForeColor = Color.FromArgb(220, 53, 69); // Đỏ
                     }
@@ -271,7 +290,7 @@ namespace ERP
             try
             {
                 string keyword = txtSearch.Text.Trim();
-                if (keyword == "🔍 Tìm kiếm theo Mã phiếu trả, Tên ĐVC..." || keyword == "🔍 Tìm kiếm theo Mã phiếu trả, Mã YC, Khách hàng...")
+                if (keyword == "🔍 Tìm kiếm theo Mã phiếu, Biển số xe, Mã CTYC, Tên ĐVC..." || keyword == "🔍 Tìm kiếm theo Mã phiếu, Biển số xe, Mã CTYC, Tên ĐVC...")
                 {
                     keyword = "";
                 }
@@ -300,8 +319,8 @@ namespace ERP
 
         private void txtSearch_TextChanged(object sender, EventArgs e)
         {
-            if (txtSearch.Text != "🔍 Tìm kiếm theo Mã phiếu trả, Tên ĐVC..." &&
-                txtSearch.Text != "🔍 Tìm kiếm theo Mã phiếu trả, Mã YC, Khách hàng...")
+            if (txtSearch.Text != "🔍 Tìm kiếm theo Mã phiếu, Biển số xe, Mã CTYC, Tên ĐVC..." &&
+                txtSearch.Text != "🔍 Tìm kiếm theo Mã phiếu, Biển số xe, Mã CTYC, Tên ĐVC...")
             {
                 TimKiem();
             }
@@ -314,8 +333,8 @@ namespace ERP
 
         private void txtSearch_Enter(object sender, EventArgs e)
         {
-            if (txtSearch.Text == "🔍 Tìm kiếm theo Mã phiếu trả, Tên ĐVC..." ||
-                txtSearch.Text == "🔍 Tìm kiếm theo Mã phiếu trả, Mã YC, Khách hàng...")
+            if (txtSearch.Text == "🔍 Tìm kiếm theo Mã phiếu, Biển số xe, Mã CTYC, Tên ĐVC..." ||
+                txtSearch.Text == "🔍 Tìm kiếm theo Mã phiếu, Biển số xe, Mã CTYC, Tên ĐVC...")
             {
                 txtSearch.Text = "";
                 txtSearch.ForeColor = Color.Black;
@@ -326,7 +345,7 @@ namespace ERP
         {
             if (string.IsNullOrWhiteSpace(txtSearch.Text))
             {
-                txtSearch.Text = "🔍 Tìm kiếm theo Mã phiếu trả, Tên ĐVC...";
+                txtSearch.Text = "🔍 Tìm kiếm theo Mã phiếu, Biển số xe, Mã CTYC, Tên ĐVC...";
                 txtSearch.ForeColor = Color.Gray;
             }
         }
@@ -349,6 +368,13 @@ namespace ERP
             if (dgvData.CurrentRow != null)
             {
                 string id = dgvData.CurrentRow.Cells["colID_PhieuTra"].Value?.ToString();
+                string status = dgvData.CurrentRow.Cells["colTrangThai"].Value?.ToString();
+
+                if (status == "Đã xử lý" || status == "Đã nhập kho" || status == "Đã hủy" || status == "Từ chối")
+                {
+                    MessageBox.Show($"Phiếu trả hàng [{id}] đã '{status}' (Kho đã duyệt / kết thúc) nên thông tin đã bị khóa!\n\nHệ thống sẽ mở phiếu ở chế độ chỉ đọc để xem chi tiết.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
                 if (!string.IsNullOrEmpty(id))
                 {
                     FrmPhieuTraHang frm = new FrmPhieuTraHang(id);
@@ -361,6 +387,42 @@ namespace ERP
             else
             {
                 MessageBox.Show("Vui lòng chọn phiếu trả hàng cần sửa trên bảng!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        private void btnUpdateStatus_Click(object sender, EventArgs e)
+        {
+            if (dgvData.CurrentRow != null)
+            {
+                string id = dgvData.CurrentRow.Cells["colID_PhieuTra"].Value?.ToString();
+                string statusHienTai = dgvData.CurrentRow.Cells["colTrangThai"].Value?.ToString();
+
+                if (statusHienTai == "Đã xử lý" || statusHienTai == "Đã nhập kho")
+                {
+                    MessageBox.Show("Phiếu trả hàng này đã HOÀN THÀNH / ĐƯỢC KHO DUYỆT XỬ LÝ nên không thể thay đổi trạng thái!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                if (statusHienTai == "Đã hủy" || statusHienTai == "Từ chối")
+                {
+                    MessageBox.Show("Phiếu trả hàng này ĐÃ HỦY / TỪ CHỐI nên không thể thay đổi trạng thái!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                if (!string.IsNullOrEmpty(id))
+                {
+                    using (FrmCapNhatTrangThaiTraHang frm = new FrmCapNhatTrangThaiTraHang(id, statusHienTai))
+                    {
+                        if (frm.ShowDialog() == DialogResult.OK)
+                        {
+                            LoadDataPhieuTraHang();
+                        }
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng chọn phiếu trả hàng cần cập nhật trạng thái!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 

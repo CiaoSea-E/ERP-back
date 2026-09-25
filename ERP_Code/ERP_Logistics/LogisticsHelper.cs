@@ -6,6 +6,11 @@ using System.Windows.Forms;
 
 namespace ERP
 {
+    public interface IRefreshableForm
+    {
+        void LamMoiDuLieu();
+    }
+
     public static class LogisticsHelper
     {
         public static void DangXuat(Form currentForm)
@@ -159,6 +164,15 @@ namespace ERP
             targetForm.Show();
             targetForm.BringToFront();
             targetForm.Focus();
+
+            if (targetForm is IRefreshableForm refreshable)
+            {
+                try
+                {
+                    refreshable.LamMoiDuLieu();
+                }
+                catch { }
+            }
 
             // Ẩn form cũ để người dùng chỉ thấy 1 CỬA SỔ DUY NHẤT (tránh mở nhiều tab / cửa sổ chồng chéo)
             if (currentForm != null && currentForm != targetForm && !currentForm.IsDisposed)

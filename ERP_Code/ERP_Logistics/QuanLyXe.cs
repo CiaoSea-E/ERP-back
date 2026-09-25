@@ -7,10 +7,11 @@ using ERP.DAL;
 
 namespace ERP
 {
-    public partial class QuanLyXe : Form
+    public partial class QuanLyXe : Form, IRefreshableForm
     {
         private string connectionString = DatabaseConfig.GetConnectionString();
         private DataTable dtXe;
+        private readonly ERP.BLL.DonVanChuyenBLL donVanChuyenBLL = new ERP.BLL.DonVanChuyenBLL();
 
         public QuanLyXe()
         {
@@ -19,6 +20,16 @@ namespace ERP
 
         private FlowLayoutPanel pnlKpiContainer;
         private Label lblKpiTotalVal, lblKpiFreeVal, lblKpiBusyVal, lblKpiMaintVal;
+
+        public void LamMoiDuLieu()
+        {
+            try
+            {
+                LoadDataXe();
+                LoadTrangThaiFilter();
+            }
+            catch { }
+        }
 
         private void QuanLyXe_Load(object sender, EventArgs e)
         {
@@ -42,10 +53,19 @@ namespace ERP
                     txtSearch.Text = "🔍 Tìm kiếm phương tiện, tài xế...";
                     txtSearch.ForeColor = Color.Gray;
                     if (cboStatus.Items.Count > 0) cboStatus.SelectedIndex = 0;
-                    LocDuLieu();
+                    LamMoiDuLieu();
                 },
                 new FilterItem("Trạng thái:", this.cboStatus, 160)
             );
+
+            // Đăng ký sự kiện khi form được hiển thị trở lại từ Hide()
+            this.VisibleChanged += (s, ev) =>
+            {
+                if (this.Visible && !this.IsDisposed)
+                {
+                    LamMoiDuLieu();
+                }
+            };
 
             // Đổ dữ liệu lên các filter từ database
             LoadTrangThaiFilter();
@@ -236,6 +256,13 @@ namespace ERP
 
         private void LoadDataXe()
         {
+            // Tự động đồng bộ trạng thái toàn bộ phương tiện theo thực tế hoạt động
+            try
+            {
+                donVanChuyenBLL.DongBoTrangThaiXeToanHeThong();
+            }
+            catch { }
+
             // Truy vấn lấy dữ liệu chính xác từ bảng PhuongTien
             string query = "SELECT BienSoXe, LoaiXe, TaiTrong, TenTaiXe, TrangThaiXe, KichHoat FROM PhuongTien ORDER BY BienSoXe ASC";
 
